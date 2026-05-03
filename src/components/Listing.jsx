@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import ListingCard from "./ListingCard";
+import { useCategoryContext } from "../context/CategoryContext";
 
 const Listing = () => {
   const clothing = [
@@ -336,7 +337,7 @@ const Listing = () => {
     },
   ];
 
-  const [category, setCategory] = useState("all");
+  const {category, setCategory} = useCategoryContext();
 
   return (
     <div className="mx-auto max-w-7xl p-4 sm:px-6 lg:px-8 flex flex-col gap-6">
