@@ -16,7 +16,7 @@ const NavBar = () => {
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 text-slate-900 shadow-sm backdrop-blur-md">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-3 px-4 py-3 sm:px-6 lg:px-8">
-        <a href="#" className="shrink-0 text-xl font-extrabold tracking-tight text-slate-900">
+        <a href="#" className="shrink-0 text-xl text-indigo-700 font-extrabold tracking-tight">
           SellMyStyle
         </a>
 
