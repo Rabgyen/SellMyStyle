@@ -49,3 +49,12 @@ body{
 .hero-slide-image {
   animation: heroSlideFade 0.7s ease-in-out;
 }
+
+.clip-slanted {
+  clip-path: polygon(
+    0 0%,        /* top-left */
+    100% 20%,    /* top-right slants down */
+    100% 100%,   /* bottom-right */
+    0% 100%      /* bottom-left */
+  );
+}

@@ -3,6 +3,7 @@ import NavBar from './components/NavBar'
 import Hero from './components/Hero'
 import Listing from './components/Listing'
 import { CategoryProvider } from './context/CategoryContext'
+import Footer from './components/Footer'
 
 const App = () => {
   return (
@@ -11,6 +12,7 @@ const App = () => {
       <Hero/>
       <CategoryProvider>
         <Listing/>
+        <Footer/>
       </CategoryProvider>
     </div>
   )
