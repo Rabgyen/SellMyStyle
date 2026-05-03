@@ -1,19 +1,19 @@
-import React from 'react'
-import NavBar from './components/NavBar'
-import Hero from './components/Hero'
-import Listing from './components/Listing'
-import { CategoryProvider } from './context/CategoryContext'
-import Footer from './components/Footer'
+import React from 'react';
+import Home from './pages/Home';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import SignIn from './pages/SignIn';
+import SignUp from './pages/SignUp';
 
 const App = () => {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
-      <NavBar />
-      <Hero/>
-      <CategoryProvider>
-        <Listing/>
-        <Footer/>
-      </CategoryProvider>
+      <BrowserRouter>
+      <Routes>
+        <Route path='/' element={<Home/>} />
+        <Route path='/signin' element={<SignIn/>} />
+        <Route path='/signup' element={<SignUp/>} />
+      </Routes>
+      </BrowserRouter>
     </div>
   )
 }
