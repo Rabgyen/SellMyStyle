@@ -50,7 +50,7 @@ const Hero = () => {
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-[1.1fr_0.9fr] md:items-stretch">
                     <div className="flex h-full flex-col justify-between gap-6 bg-slate-50 shadow-2xl p-4">
                         <div className="rounded-lg bg-white p-6 shadow-sm sm:p-8">
-                            <h2 className="text-3xl font-extrabold uppercase leading-tight sm:text-5xl">
+                            <h2 className="text-3xl font-extrabold uppercase leading-tight sm:text-5xl text-[#994ffe]">
                                 Sell My Style
                             </h2>
                             <h2 className="mt-2 text-2xl font-extrabold sm:text-4xl">
@@ -92,7 +92,7 @@ const Hero = () => {
                     </div>
 
                     <div className="flex h-full items-stretch">
-                        <div className="relative w-full overflow-hidden rounded-lg bg-white shadow-sm min-h-120 max-h-160">
+                        <div className="relative w-full h-128 overflow-hidden rounded-lg bg-white shadow-sm sm:h-152 lg:h-176">
                             <img
                                 src={images[activeImageIndex]}
                                 alt={`Hero slide ${activeImageIndex + 1}`}
