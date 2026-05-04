@@ -7,8 +7,8 @@ export const useFavoriteContext = () => useContext(FavoriteContext);
 export const FavoriteProvider = ( {children} ) => {
     
     const [favorite, setFavorite] = useState(() => {
-        const storeFav = localStorage.getItem('favorite');
-        return storeFav ? JSON.parse(storeFav) : [];
+        const storedFav = localStorage.getItem('favorite');
+        return storedFav ? JSON.parse(storedFav) : [];
     })
 
     useEffect(() => {

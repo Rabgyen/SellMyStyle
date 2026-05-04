@@ -6,28 +6,44 @@ import { LiaHeartSolid } from "react-icons/lia";
 import NavBar from "../components/NavBar";
 import { MdDateRange } from "react-icons/md";
 import { FaShippingFast } from "react-icons/fa";
+import { BsFillCartCheckFill } from "react-icons/bs";
+import { IoIosStar } from "react-icons/io";
 import { CiDiscount1 } from "react-icons/ci";
 import { useFavoriteContext } from "../context/FavoriteContext";
+import { useCartContext } from "../context/CartContext";
 
 const ClothingDetails = () => {
-  const { isFavorite, addToFavorite, removeFromFavorite } =
-    useFavoriteContext();
-
   const { id } = useParams();
+  const numeirId = Number(id);
   const clothing = clothes;
 
-  const favoriteItem = isFavorite(Number(id));
+  const { isFavorite, addToFavorite, removeFromFavorite } = useFavoriteContext();
 
-  const items = clothing.find((item) => item.id === Number(id));
+  const { inCart, addToCart, removeFromCart } = useCartContext();
 
-  const handleFavorite = (e) => {
-    e.preventDefault();
+  const cartItem = inCart(numeirId);
+
+  const favoriteItem = isFavorite(numeirId);
+
+  const items = clothing.find((item) => item.id === numeirId);
+
+  const handleFavorite = () => {
     if (favoriteItem) {
-      removeFromFavorite(Number(id));
+      removeFromFavorite(numeirId);
     } else {
       addToFavorite(items);
     }
   };
+
+  const handleCart = ()=> {
+    if(cartItem){
+      removeFromCart(numeirId);
+    }else{
+      addToCart(items)
+    }
+}
+
+
 
   return (
     <div className="h-screen w-full">
@@ -47,9 +63,16 @@ const ClothingDetails = () => {
             Thrift
           </p>
           <span className="flex gap-4 items-center justify-center">
-            <button className="bg-black flex items-center justify-center gap-2 text-white w-full rounded-2xl py-4">
-              Add to Cart <FaCartShopping />
-            </button>
+            {cartItem ? (
+              <button onClick={handleCart} className="bg-black flex items-center justify-center gap-2 text-white w-full rounded-2xl py-4">
+                View Cart <BsFillCartCheckFill />
+              </button>
+            ) : (
+              <button onClick={handleCart} className="bg-black flex items-center justify-center gap-2 text-white w-full rounded-2xl py-4">
+                Add to Cart <FaCartShopping />
+              </button>
+            )}
+
             <LiaHeartSolid
               onClick={handleFavorite}
               className={`text-4xl ${favoriteItem ? "text-red-500" : "text-black"} shadow-2xl`}
@@ -70,14 +93,14 @@ const ClothingDetails = () => {
           <div className="flex flex-col gap-2">
             <p className="text-sm md:text-lg">Shipping</p>
             <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4">
-              <div className="flex gap-4 items-center justify-center p-2 ">
+              <div className="flex gap-4 items-center p-2 ">
                 <MdDateRange className="text-2xl" />
                 <span>
                   <p className="text-xs text-black/45">Delivery Time</p>
                   <p className="text-sm">2-3 Working Days</p>
                 </span>
               </div>
-              <div className="flex gap-4 items-center justify-center p-2">
+              <div className="flex gap-4 items-center p-2">
                 <FaShippingFast className="text-2xl" />
                 <span>
                   <p className="text-xs text-black/45">Estimate Arrival</p>
@@ -97,6 +120,7 @@ const ClothingDetails = () => {
               </div>
             </div>
           </div>
+    
         </div>
       </div>
     </div>
