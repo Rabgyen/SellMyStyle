@@ -1,4 +1,4 @@
-import {useState} from "react";
+import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { clothes } from "../data/clothingData";
 import { FaCartShopping } from "react-icons/fa6";
@@ -7,18 +7,27 @@ import NavBar from "../components/NavBar";
 import { MdDateRange } from "react-icons/md";
 import { FaShippingFast } from "react-icons/fa";
 import { CiDiscount1 } from "react-icons/ci";
+import { useFavoriteContext } from "../context/FavoriteContext";
 
 const ClothingDetails = () => {
+  const { isFavorite, addToFavorite, removeFromFavorite } =
+    useFavoriteContext();
+
   const { id } = useParams();
   const clothing = clothes;
 
+  const favoriteItem = isFavorite(Number(id));
+
   const items = clothing.find((item) => item.id === Number(id));
 
-    const [liked, setLiked] = useState(false);
-  const handleFavorite =() => {
-    setLiked(prev => !prev);
-  }
-
+  const handleFavorite = (e) => {
+    e.preventDefault();
+    if (favoriteItem) {
+      removeFromFavorite(Number(id));
+    } else {
+      addToFavorite(items);
+    }
+  };
 
   return (
     <div className="h-screen w-full">
@@ -34,12 +43,17 @@ const ClothingDetails = () => {
         <div className="flex-1 flex flex-col gap-4 p-6 min-w-80">
           <h1 className="text-2xl md:text-4xl font-semibold">{items.title}</h1>
           <p className="text-sm md:text-lg">{items.price}</p>
-          <p className="text-center py-2 bg-black/10 rounded-lg w-20 text-gray-400 text-sm">Thrift</p>
+          <p className="text-center py-2 bg-black/10 rounded-lg w-20 text-gray-400 text-sm">
+            Thrift
+          </p>
           <span className="flex gap-4 items-center justify-center">
             <button className="bg-black flex items-center justify-center gap-2 text-white w-full rounded-2xl py-4">
               Add to Cart <FaCartShopping />
             </button>
-            <LiaHeartSolid onClick={handleFavorite} className={`text-4xl ${liked ? 'text-red-500' : 'text-black'} shadow-2xl`} />
+            <LiaHeartSolid
+              onClick={handleFavorite}
+              className={`text-4xl ${favoriteItem ? "text-red-500" : "text-black"} shadow-2xl`}
+            />
           </span>
           <div className="flex flex-col gap-2">
             <h1 className="text-sm md:text-lg">Description and Fit</h1>

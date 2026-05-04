@@ -4,17 +4,23 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import SignIn from './pages/SignIn';
 import SignUp from './pages/SignUp';
 import ClothingDetails from './pages/ClothingDetails';
+import { CategoryProvider } from './context/CategoryContext';
+import { FavoriteProvider } from './context/FavoriteContext';
 
 const App = () => {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <BrowserRouter>
-      <Routes>
-        <Route path='/' element={<Home/>} />
-        <Route path='/signin' element={<SignIn/>} />
-        <Route path='/signup' element={<SignUp/>} />
-        <Route path='/clothes/:id' element={<ClothingDetails/>} />
-      </Routes>
+        <CategoryProvider>
+          <FavoriteProvider>
+            <Routes>
+              <Route path='/' element={<Home/>} />
+              <Route path='/signin' element={<SignIn/>} />
+              <Route path='/signup' element={<SignUp/>} />
+              <Route path='/clothes/:id' element={<ClothingDetails/>} />
+            </Routes>
+          </FavoriteProvider>
+        </CategoryProvider>
       </BrowserRouter>
     </div>
   )
