@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   FaRegHeart,
   FaSearch,
@@ -16,9 +17,7 @@ const NavBar = () => {
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 text-slate-900 shadow-sm backdrop-blur-md">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-3 px-4 py-3 sm:px-6 lg:px-8">
-        <a href="#" className="shrink-0 text-xl text-indigo-700 font-extrabold tracking-tight">
-          SellMyStyle
-        </a>
+        <Link to="/" className="shrink-0 text-xl text-indigo-700 font-extrabold tracking-tight">SellMyStyle</Link>
 
         <div className="ml-auto hidden items-center gap-2 md:flex">
           {!isSearchOpen ? (

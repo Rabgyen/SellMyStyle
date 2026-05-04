@@ -1,20 +1,28 @@
-import React, { useState } from "react";
+import React from "react";
 import { LiaHeartSolid } from "react-icons/lia";
 import { Link } from "react-router-dom";
+import { useFavoriteContext } from "../context/FavoriteContext";
 
 const ListingCard = ({ clothes }) => {
 
-    const [liked, setliked] = useState(false);
+  const {isFavorite, removeFromFavorite, addToFavorite} = useFavoriteContext();
 
-    const handleClick = () =>{
-        setliked(prev => !prev)
+  const favoriteItem = isFavorite(clothes.id);
+
+  const handleFavorite =(e) => {
+    e.preventDefault();
+    if(favoriteItem){
+      removeFromFavorite(clothes.id);
+    }else{
+      addToFavorite(clothes);
     }
+  }
 
   return (
     <div className="relative flex flex-col gap-4 p-4 rounded-lg shadow-4xs">
+      <LiaHeartSolid onClick={handleFavorite} className={`absolute z-100 top-4 right-4 ${favoriteItem ? 'text-red-500' : 'text-black'} shadow-2xl`}/>
       <Link to={`/clothes/${clothes.id}`}>
       <div className=" w-full h-64 md:h-72 flex items-center justify-center bg-gray-100 overflow-hidden rounded-md">
-        <LiaHeartSolid onClick={handleClick} className={`absolute z-100 top-4 right-4 ${liked ? 'text-red-500' : 'text-black'} shadow-2xl`}/>
         <img
           src={clothes.image}
           alt={clothes.title || clothes.category}

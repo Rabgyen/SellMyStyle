@@ -2,7 +2,8 @@ import React from 'react'
 import NavBar from '../components/NavBar'
 import Hero from '../components/Hero'
 import Listing from '../components/Listing'
-import { CategoryProvider } from '../context/CategoryContext'
+import { CategoryProvider } from '../context/CategoryContext';
+import { FavoriteProvider } from '../context/FavoriteContext';
 import Footer from '../components/Footer'
 
 const Home = () => {
@@ -11,7 +12,9 @@ const Home = () => {
       <NavBar />
       <Hero/>
       <CategoryProvider>
-        <Listing/>
+        <FavoriteProvider>
+            <Listing/>
+        </FavoriteProvider>
         <Footer/>
       </CategoryProvider>
     </div>

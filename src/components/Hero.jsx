@@ -69,7 +69,7 @@ const Hero = () => {
                                 <div className="flex flex-col items-start gap-4">
                                     <FaShippingFast className="mt-1 text-2xl text-slate-700" />
                                     <div>
-                                        <h3 className="text-sm font-semibold">Fast & Reliable Shipping</h3>
+                                        <h3 className="text-sm font-semibold">Fast & Reliable Shipping</h3>     
                                         <p className="mt-2 text-xs text-slate-500">
                                             Get your orders delivered quickly with real-time tracking so you always know where your fashion items are.
                                         </p>
