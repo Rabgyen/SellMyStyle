@@ -43,7 +43,11 @@ const ClothingDetails = () => {
     }
 }
 
+  const [rating, setRating] = useState(0);
 
+  const handleRating = (value) => {
+    setRating(value);
+  }
 
   return (
     <div className="h-screen w-full">
@@ -120,7 +124,23 @@ const ClothingDetails = () => {
               </div>
             </div>
           </div>
-    
+          <div className="flex flex-col gap-2">
+            <p className="text-sm md:text-lg">Rating</p>
+            <div className="flex gap-2">
+              <span className="flex items-end"><p className="text-2xl md:text-4xl font-semibold">{rating? rating : 0}</p><p className="text-sm text-gray-400">/5</p></span>
+              <div className="flex">
+                {[1,2,3,4,5].map((star) => (
+                <span
+                  key={star}
+                  onClick={() => handleRating(star)}
+                  className={`cursor-pointer flex text-2xl ${star <= rating ? 'text-yellow-400' : 'text-gray-300'}`}
+                >
+                  <IoIosStar />
+                </span>
+              ))}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
