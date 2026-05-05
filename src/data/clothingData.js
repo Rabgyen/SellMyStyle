@@ -5,6 +5,8 @@ export const clothes = [
       category: "Shirts",
       title: "Blue Casual Shirt",
       price: "Rs. 1500",
+      description: "A comfortable and versatile blue casual shirt perfect for everyday wear. Fit: Regular",
+      condition: "Brand New",
     },
     {
       id: 2,
@@ -12,6 +14,8 @@ export const clothes = [
       category: "Shirts",
       title: "White Formal Shirt",
       price: "Rs. 1700",
+      description: "Classic white formal shirt ideal for office and business occasions. Fit: Slim",
+      condition: "Brand New",
     },
     {
       id: 3,
@@ -19,6 +23,8 @@ export const clothes = [
       category: "Shirts",
       title: "Striped Shirt",
       price: "Rs. 1600",
+      description: "Stylish striped shirt adding a touch of elegance to your casual outfit. Fit: Regular",
+      condition: "Thrift",
     },
     {
       id: 4,
@@ -26,6 +32,8 @@ export const clothes = [
       category: "Shirts",
       title: "Slim Fit Shirt",
       price: "Rs. 1800",
+      description: "Modern slim fit shirt designed for a contemporary look. Fit: Slim",
+      condition: "Brand New",
     },
     {
       id: 5,
@@ -33,6 +41,8 @@ export const clothes = [
       category: "Shirts",
       title: "Printed Shirt",
       price: "Rs. 1550",
+      description: "Eye-catching printed shirt with vibrant patterns and colors. Fit: Regular",
+      condition: "Brand New",
     },
     {
       id: 6,
@@ -40,6 +50,8 @@ export const clothes = [
       category: "Shirts",
       title: "Denim Shirt",
       price: "Rs. 1900",
+      description: "Durable denim shirt with a classic American style. Fit: Relaxed",
+      condition: "Thrift",
     },
     {
       id: 7,
@@ -47,6 +59,8 @@ export const clothes = [
       category: "Shirts",
       title: "Checked Shirt",
       price: "Rs. 1650",
+      description: "Timeless checked pattern shirt great for layering. Fit: Regular",
+      condition: "Brand New",
     },
     {
       id: 8,
@@ -54,6 +68,8 @@ export const clothes = [
       category: "Shirts",
       title: "Half Sleeve Shirt",
       price: "Rs. 1400",
+      description: "Lightweight half sleeve shirt perfect for warm weather. Fit: Regular",
+      condition: "Brand New",
     },
     {
       id: 9,
@@ -61,6 +77,8 @@ export const clothes = [
       category: "Shirts",
       title: "Linen Shirt",
       price: "Rs. 2000",
+      description: "Breathable linen shirt offering comfort and style in summer. Fit: Relaxed",
+      condition: "Brand New",
     },
     {
       id: 10,
@@ -68,6 +86,8 @@ export const clothes = [
       category: "Shirts",
       title: "Oversized Shirt",
       price: "Rs. 1750",
+      description: "Trendy oversized shirt for a relaxed and comfortable fit. Fit: Oversized",
+      condition: "Thrift",
     },
 
     {
@@ -76,6 +96,8 @@ export const clothes = [
       category: "Pants",
       title: "Black Formal Pants",
       price: "Rs. 2200",
+      description: "Crisp black formal pants suitable for professional settings. Fit: Slim",
+      condition: "Brand New",
     },
     {
       id: 12,
@@ -83,6 +105,8 @@ export const clothes = [
       category: "Pants",
       title: "Slim Fit Pants",
       price: "Rs. 2100",
+      description: "Sleek slim fit pants for a sharp and polished appearance. Fit: Slim",
+      condition: "Brand New",
     },
     {
       id: 13,
@@ -90,6 +114,8 @@ export const clothes = [
       category: "Pants",
       title: "Casual Chinos",
       price: "Rs. 2000",
+      description: "Versatile chinos perfect for casual-smart occasions. Fit: Regular",
+      condition: "Thrift",
     },
     {
       id: 14,
@@ -97,6 +123,8 @@ export const clothes = [
       category: "Pants",
       title: "Jogger Pants",
       price: "Rs. 1800",
+      description: "Comfortable jogger pants with an athletic style. Fit: Relaxed",
+      condition: "Brand New",
     },
     {
       id: 15,
@@ -104,6 +132,8 @@ export const clothes = [
       category: "Pants",
       title: "Cargo Pants",
       price: "Rs. 2300",
+      description: "Practical cargo pants with multiple pockets for functionality. Fit: Relaxed",
+      condition: "Brand New",
     },
     {
       id: 16,
@@ -111,6 +141,8 @@ export const clothes = [
       category: "Pants",
       title: "Denim Jeans",
       price: "Rs. 2500",
+      description: "High-quality denim jeans that never go out of style. Fit: Regular",
+      condition: "Thrift",
     },
     {
       id: 17,
@@ -118,6 +150,8 @@ export const clothes = [
       category: "Pants",
       title: "Track Pants",
       price: "Rs. 1700",
+      description: "Soft track pants ideal for sports and leisure. Fit: Relaxed",
+      condition: "Brand New",
     },
     {
       id: 18,
@@ -125,6 +159,8 @@ export const clothes = [
       category: "Pants",
       title: "Formal Trousers",
       price: "Rs. 2400",
+      description: "Premium formal trousers for executive and formal wear. Fit: Slim",
+      condition: "Brand New",
     },
     {
       id: 19,
@@ -132,6 +168,8 @@ export const clothes = [
       category: "Pants",
       title: "Relaxed Fit Pants",
       price: "Rs. 2100",
+      description: "Comfortable relaxed fit pants for everyday wear. Fit: Relaxed",
+      condition: "Thrift",
     },
 
     {
@@ -140,6 +178,8 @@ export const clothes = [
       category: "Shoes",
       title: "Running Shoes",
       price: "Rs. 3200",
+      description: "High-performance running shoes with excellent cushioning. Fit: True to Size",
+      condition: "Brand New",
     },
     {
       id: 21,
@@ -147,6 +187,8 @@ export const clothes = [
       category: "Shoes",
       title: "Casual Sneakers",
       price: "Rs. 3000",
+      description: "Stylish casual sneakers for everyday comfort. Fit: True to Size",
+      condition: "Thrift",
     },
     {
       id: 22,
@@ -154,6 +196,8 @@ export const clothes = [
       category: "Shoes",
       title: "Formal Shoes",
       price: "Rs. 3500",
+      description: "Elegant formal shoes perfect for dress events. Fit: True to Size",
+      condition: "Brand New",
     },
     {
       id: 23,
@@ -161,6 +205,8 @@ export const clothes = [
       category: "Shoes",
       title: "Sports Shoes",
       price: "Rs. 3300",
+      description: "Professional sports shoes engineered for athletic performance. Fit: True to Size",
+      condition: "Brand New",
     },
     {
       id: 24,
@@ -168,6 +214,8 @@ export const clothes = [
       category: "Shoes",
       title: "High Top Sneakers",
       price: "Rs. 3400",
+      description: "Trendy high top sneakers with ankle support. Fit: True to Size",
+      condition: "Thrift",
     },
     {
       id: 25,
@@ -175,6 +223,8 @@ export const clothes = [
       category: "Shoes",
       title: "Slip-On Shoes",
       price: "Rs. 2800",
+      description: "Convenient slip-on shoes for easy wear. Fit: True to Size",
+      condition: "Brand New",
     },
     {
       id: 26,
@@ -182,6 +232,8 @@ export const clothes = [
       category: "Shoes",
       title: "Canvas Shoes",
       price: "Rs. 2600",
+      description: "Lightweight canvas shoes great for casual outings. Fit: True to Size",
+      condition: "Brand New",
     },
     {
       id: 27,
@@ -189,6 +241,8 @@ export const clothes = [
       category: "Shoes",
       title: "Training Shoes",
       price: "Rs. 3100",
+      description: "Versatile training shoes suitable for various activities. Fit: True to Size",
+      condition: "Thrift",
     },
 
     {
@@ -197,6 +251,8 @@ export const clothes = [
       category: "Tie",
       title: "Silk Tie",
       price: "Rs. 800",
+      description: "Premium silk tie with a luxurious finish. Fit: One Size",
+      condition: "Brand New",
     },
     {
       id: 29,
@@ -204,6 +260,8 @@ export const clothes = [
       category: "Tie",
       title: "Striped Tie",
       price: "Rs. 750",
+      description: "Classic striped tie perfect for formal occasions. Fit: One Size",
+      condition: "Thrift",
     },
     {
       id: 30,
@@ -211,6 +269,8 @@ export const clothes = [
       category: "Tie",
       title: "Pattern Tie",
       price: "Rs. 850",
+      description: "Sophisticated patterned tie to enhance any outfit. Fit: One Size",
+      condition: "Brand New",
     },
     {
       id: 31,
@@ -218,6 +278,8 @@ export const clothes = [
       category: "Tie",
       title: "Classic Tie",
       price: "Rs. 700",
+      description: "Timeless classic tie suitable for all occasions. Fit: One Size",
+      condition: "Brand New",
     },
     {
       id: 32,
@@ -225,6 +287,8 @@ export const clothes = [
       category: "Tie",
       title: "Formal Tie",
       price: "Rs. 900",
+      description: "Elegant formal tie for business and formal events. Fit: One Size",
+      condition: "Thrift",
     },
     {
       id: 33,
@@ -232,6 +296,8 @@ export const clothes = [
       category: "Tie",
       title: "Designer Tie",
       price: "Rs. 1000",
+      description: "Designer tie featuring exclusive patterns and quality. Fit: One Size",
+      condition: "Brand New",
     },
 
     {
@@ -240,6 +306,8 @@ export const clothes = [
       category: "Socks",
       title: "Cotton Socks",
       price: "Rs. 300",
+      description: "Soft cotton socks offering comfort and breathability. Fit: One Size",
+      condition: "Brand New",
     },
     {
       id: 35,
@@ -247,6 +315,8 @@ export const clothes = [
       category: "Socks",
       title: "Ankle Socks",
       price: "Rs. 250",
+      description: "Short ankle socks ideal for casual footwear. Fit: One Size",
+      condition: "Thrift",
     },
     {
       id: 36,
@@ -254,6 +324,8 @@ export const clothes = [
       category: "Socks",
       title: "Sports Socks",
       price: "Rs. 350",
+      description: "Performance sports socks with moisture-wicking technology. Fit: One Size",
+      condition: "Brand New",
     },
 
     {
@@ -262,6 +334,8 @@ export const clothes = [
       category: "Shades",
       title: "Black Sunglasses",
       price: "Rs. 1200",
+      description: "Classic black sunglasses with UV protection. Fit: One Size",
+      condition: "Brand New",
     },
     {
       id: 38,
@@ -269,6 +343,8 @@ export const clothes = [
       category: "Shades",
       title: "Aviator Shades",
       price: "Rs. 1500",
+      description: "Iconic aviator style sunglasses for a timeless look. Fit: One Size",
+      condition: "Thrift",
     },
     {
       id: 39,
@@ -276,6 +352,8 @@ export const clothes = [
       category: "Shades",
       title: "Round Shades",
       price: "Rs. 1300",
+      description: "Retro round sunglasses adding style to any outfit. Fit: One Size",
+      condition: "Brand New",
     },
     {
       id: 40,
@@ -283,6 +361,8 @@ export const clothes = [
       category: "Shades",
       title: "Polarized Shades",
       price: "Rs. 1600",
+      description: "Polarized sunglasses reducing glare and eye strain. Fit: One Size",
+      condition: "Brand New",
     },
 
     {
@@ -291,6 +371,8 @@ export const clothes = [
       category: "Caps",
       title: "Baseball Cap",
       price: "Rs. 600",
+      description: "Classic baseball cap perfect for outdoor activities. Fit: Adjustable",
+      condition: "Brand New",
     },
     {
       id: 42,
@@ -298,6 +380,8 @@ export const clothes = [
       category: "Caps",
       title: "Snapback Cap",
       price: "Rs. 700",
+      description: "Trendy snapback cap with secure snap closure. Fit: Adjustable",
+      condition: "Thrift",
     },
     {
       id: 43,
@@ -305,6 +389,8 @@ export const clothes = [
       category: "Caps",
       title: "Trucker Cap",
       price: "Rs. 650",
+      description: "Ventilated trucker cap ideal for outdoor enthusiasts. Fit: Adjustable",
+      condition: "Brand New",
     },
     {
       id: 44,
@@ -312,6 +398,8 @@ export const clothes = [
       category: "Caps",
       title: "Sports Cap",
       price: "Rs. 750",
+      description: "Athletic sports cap with moisture-wicking lining. Fit: Adjustable",
+      condition: "Brand New",
     },
     {
       id: 45,
@@ -319,6 +407,8 @@ export const clothes = [
       category: "Caps",
       title: "Flat Cap",
       price: "Rs. 800",
+      description: "Sophisticated flat cap for a vintage-inspired look. Fit: One Size",
+      condition: "Thrift",
     },
     {
       id: 46,
@@ -326,6 +416,8 @@ export const clothes = [
       category: "Caps",
       title: "Beanie Cap",
       price: "Rs. 550",
+      description: "Cozy beanie cap perfect for cold weather. Fit: One Size",
+      condition: "Brand New",
     },
     {
       id: 47,
@@ -333,6 +425,8 @@ export const clothes = [
       category: "Caps",
       title: "Casual Cap",
       price: "Rs. 600",
+      description: "Casual cap suitable for everyday wear. Fit: Adjustable",
+      condition: "Brand New",
     },
 
     {
@@ -341,6 +435,8 @@ export const clothes = [
       category: "Accessories",
       title: "Leather Belt",
       price: "Rs. 1100",
+      description: "Genuine leather belt adding sophistication to your look. Fit: Adjustable",
+      condition: "Thrift",
     },
     {
       id: 49,
@@ -348,6 +444,8 @@ export const clothes = [
       category: "Accessories",
       title: "Wrist Watch",
       price: "Rs. 3500",
+      description: "Elegant wrist watch combining style and functionality. Fit: One Size",
+      condition: "Brand New",
     },
     {
       id: 50,
@@ -355,6 +453,8 @@ export const clothes = [
       category: "Accessories",
       title: "Bracelet",
       price: "Rs. 900",
+      description: "Stylish bracelet perfect for accessorizing any outfit. Fit: One Size",
+      condition: "Brand New",
     },
     {
       id: 51,
@@ -362,6 +462,8 @@ export const clothes = [
       category: "Accessories",
       title: "Chain Necklace",
       price: "Rs. 1200",
+      description: "Elegant chain necklace adding a touch of elegance. Fit: One Size",
+      condition: "Thrift",
     },
     {
       id: 52,
@@ -369,6 +471,8 @@ export const clothes = [
       category: "Accessories",
       title: "Wallet",
       price: "Rs. 1500",
+      description: "Premium wallet for secure and stylish card storage. Fit: One Size",
+      condition: "Brand New",
     },
     {
       id: 53,
@@ -376,6 +480,8 @@ export const clothes = [
       category: "Accessories",
       title: "Ring",
       price: "Rs. 800",
+      description: "Fashionable ring to complete your jewelry collection. Fit: One Size",
+      condition: "Brand New",
     },
     {
       id: 54,
@@ -383,5 +489,7 @@ export const clothes = [
       category: "Accessories",
       title: "Keychain",
       price: "Rs. 400",
+      description: "Practical and stylish keychain for your keys. Fit: One Size",
+      condition: "Thrift",
     },
   ];

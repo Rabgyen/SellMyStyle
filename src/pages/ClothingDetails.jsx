@@ -76,8 +76,8 @@ const ClothingDetails = () => {
         <div className="flex-1 flex flex-col gap-4 p-6 min-w-80">
           <h1 className="text-2xl md:text-4xl font-semibold">{items.title}</h1>
           <p className="text-sm md:text-lg">{items.price}</p>
-          <p className="text-center py-2 bg-black/10 rounded-lg w-20 text-gray-400 text-sm">
-            Thrift
+          <p className="text-center p-2 bg-black/10 rounded-lg max-w-25 text-gray-600 text-sm">
+            {items.condition}
           </p>
           <span className="flex gap-4 items-center justify-center">
             {cartItem ? (
@@ -103,14 +103,8 @@ const ClothingDetails = () => {
           </span>
           <div className="flex flex-col gap-2">
             <h1 className="text-sm md:text-lg">Description and Fit</h1>
-            <p className="text-xs text-gray-500">
-              Designed with a classic collar, button-down front, and full
-              sleeves (or sometimes half sleeves), it is widely worn in formal
-              settings such as offices, interviews, business meetings, and
-              ceremonies. Its neutral white color makes it highly versatile,
-              allowing it to pair effortlessly with suits, blazers, trousers, or
-              even semi-formal outfits, making it a foundational piece in any
-              professional wardrobe.
+            <p className="text-sm text-gray-500">
+              {items.description}
             </p>
           </div>
           <div className="flex flex-col gap-2">
