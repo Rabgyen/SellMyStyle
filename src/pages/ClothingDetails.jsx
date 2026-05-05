@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useParams } from "react-router-dom";
 import { clothes } from "../data/clothingData";
 import { FaCartShopping } from "react-icons/fa6";
 import { LiaHeartSolid } from "react-icons/lia";
@@ -11,13 +11,16 @@ import { IoIosStar } from "react-icons/io";
 import { CiDiscount1 } from "react-icons/ci";
 import { useFavoriteContext } from "../context/FavoriteContext";
 import { useCartContext } from "../context/CartContext";
+import ListingCard from "../components/ListingCard";
+import Footer from "../components/Footer";
 
 const ClothingDetails = () => {
   const { id } = useParams();
   const numeirId = Number(id);
   const clothing = clothes;
 
-  const { isFavorite, addToFavorite, removeFromFavorite } = useFavoriteContext();
+  const { isFavorite, addToFavorite, removeFromFavorite } =
+    useFavoriteContext();
 
   const { inCart, addToCart, removeFromCart } = useCartContext();
 
@@ -35,19 +38,29 @@ const ClothingDetails = () => {
     }
   };
 
-  const handleCart = ()=> {
-    if(cartItem){
+  const handleCart = () => {
+    if (cartItem) {
       removeFromCart(numeirId);
-    }else{
-      addToCart(items)
+    } else {
+      addToCart(items);
     }
-}
+  };
 
   const [rating, setRating] = useState(0);
 
   const handleRating = (value) => {
     setRating(value);
-  }
+  };
+
+  const getRandomItems = (arr, count) => {
+    return [...arr].sort(() => Math.random() - 0.5).slice(0, count);
+  };
+
+  const [randomClothes, setRandomClothes] = useState([]);
+
+  useEffect(() => {
+    setRandomClothes(getRandomItems(clothing, 4));
+  }, []);
 
   return (
     <div className="h-screen w-full">
@@ -68,11 +81,17 @@ const ClothingDetails = () => {
           </p>
           <span className="flex gap-4 items-center justify-center">
             {cartItem ? (
-              <button onClick={handleCart} className="bg-black flex items-center justify-center gap-2 text-white w-full rounded-2xl py-4">
+              <button
+                onClick={handleCart}
+                className="bg-black flex items-center justify-center gap-2 text-white w-full rounded-2xl py-4"
+              >
                 View Cart <BsFillCartCheckFill />
               </button>
             ) : (
-              <button onClick={handleCart} className="bg-black flex items-center justify-center gap-2 text-white w-full rounded-2xl py-4">
+              <button
+                onClick={handleCart}
+                className="bg-black flex items-center justify-center gap-2 text-white w-full rounded-2xl py-4"
+              >
                 Add to Cart <FaCartShopping />
               </button>
             )}
@@ -127,22 +146,41 @@ const ClothingDetails = () => {
           <div className="flex flex-col gap-2">
             <p className="text-sm md:text-lg">Rating</p>
             <div className="flex gap-2">
-              <span className="flex items-end"><p className="text-2xl md:text-4xl font-semibold">{rating? rating : 0}</p><p className="text-sm text-gray-400">/5</p></span>
+              <span className="flex items-end">
+                <p className="text-2xl md:text-4xl font-semibold">
+                  {rating ? rating : 0}
+                </p>
+                <p className="text-sm text-gray-400">/5</p>
+              </span>
               <div className="flex">
-                {[1,2,3,4,5].map((star) => (
-                <span
-                  key={star}
-                  onClick={() => handleRating(star)}
-                  className={`cursor-pointer flex text-2xl ${star <= rating ? 'text-yellow-400' : 'text-gray-300'}`}
-                >
-                  <IoIosStar />
-                </span>
-              ))}
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <span
+                    key={star}
+                    onClick={() => handleRating(star)}
+                    className={`cursor-pointer flex text-2xl ${star <= rating ? "text-yellow-400" : "text-gray-300"}`}
+                  >
+                    <IoIosStar />
+                  </span>
+                ))}
               </div>
             </div>
           </div>
         </div>
       </div>
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 gap-4 py-10">
+        <h1 className="text-2xl md:text-4xl">You might also like</h1>
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-6 w-full mt-10 ">
+          {randomClothes.map((item) => (
+            <ListingCard key={item.id} clothes={item} />
+          ))}
+        </div>
+        <Link to="/">
+          <button className="mt-6 inline-flex items-center gap-2 rounded border border-slate-200 bg-white px-4 py-2 text-sm font-medium shadow-sm transition hover:bg-slate-50">
+            See More
+          </button>
+        </Link>
+      </div>
+      <Footer />
     </div>
   );
 };

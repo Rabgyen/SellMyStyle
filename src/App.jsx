@@ -7,6 +7,7 @@ import ClothingDetails from "./pages/ClothingDetails";
 import { CategoryProvider } from "./context/CategoryContext";
 import { FavoriteProvider } from "./context/FavoriteContext";
 import { CartProvider } from "./context/CartContext";
+import ScrollToTop from './components/ScrollToTop';
 
 const App = () => {
   return (
@@ -14,8 +15,9 @@ const App = () => {
       <BrowserRouter>
         <CategoryProvider>
           <FavoriteProvider>
-              <CartProvider>
-                <Routes>
+            <CartProvider>
+              <ScrollToTop />
+              <Routes>
                   <Route path="/" element={<Home />} />
                   <Route path="/signin" element={<SignIn />} />
                   <Route path="/signup" element={<SignUp />} />
