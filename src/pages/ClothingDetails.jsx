@@ -142,7 +142,7 @@ const ClothingDetails = () => {
             <div className="flex gap-2">
               <span className="flex items-end">
                 <p className="text-2xl md:text-4xl font-semibold">
-                  {rating ? rating : 0}
+                  {items.rating}
                 </p>
                 <p className="text-sm text-gray-400">/5</p>
               </span>
