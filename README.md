@@ -1,16 +1,85 @@
-# React + Vite
+👕 Sell My Style
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Sell My Style is a work-in-progress (WIP) C2C (customer-to-customer) fashion platform that allows users to buy, sell, and discover unique clothing items. The goal of this project is to build a simple and modern marketplace where users can list their clothes and connect with potential buyers.
 
-Currently, two official plugins are available:
+🚧 Project Status
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+This project is currently under development.
+Features and UI are actively being built and improved.
 
-## React Compiler
+🚀 Planned Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+1. User Marketplace
+Users will be able to browse clothing items listed by others.
 
-## Expanding the ESLint configuration
+2. Sell Items
+Users will be able to upload and sell their own clothes with images, descriptions, and pricing.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+3. Dynamic Product System
+Products will be fetched dynamically from the backend using a database.
+
+4. User Accounts (Upcoming)
+Login and registration system for buyers and sellers.
+
+5. Responsive Design
+Mobile-friendly UI built with Tailwind CSS.
+
+🛠️ Tech Stack
+
+Frontend:
+
+React.js
+Tailwind CSS
+
+Backend:
+
+Node.js
+Express.js
+
+Database:
+
+MongoDB
+📁 Project Structure
+SellMyStyle/
+│
+├── frontend/        # React frontend (UI)
+│   ├── src/
+│   └── ...
+│
+├── backend/         # Express + Node backend (API)
+│   ├── routes/
+│   ├── models/
+│   └── ...
+│
+└── README.md
+⚙️ Setup (Development)
+1. Clone the repository
+git clone https://github.com/your-username/SellMyStyle.git
+2. Backend setup
+cd backend
+npm install
+npm start
+
+Create .env file:
+
+MONGO_URI=your_mongodb_connection_string
+PORT=5000
+3. Frontend setup
+cd frontend
+npm install
+npm run dev
+🎯 Goal of the Project
+
+The main goal of Sell My Style is to build a practical full-stack C2C fashion platform while learning real-world development concepts such as:
+
+REST API development
+Database integration
+Full-stack architecture
+UI/UX design with React
+🤝 Contribution
+
+This project is still in progress, but suggestions and improvements are welcome.
+
+📜 License
+
+This project is open-source and available under the MIT License.
