@@ -3,10 +3,8 @@ import ListingCard from "./ListingCard";
 import { useCategoryContext } from "../context/CategoryContext";
 import { clothes } from "../data/clothingData";
 
-const Listing = () => {
+const Listing = ({clothing}) => {
   
-  const clothing = clothes;
-
   const {category, setCategory} = useCategoryContext();
 
   return (

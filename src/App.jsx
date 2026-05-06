@@ -8,6 +8,7 @@ import { CategoryProvider } from "./context/CategoryContext";
 import { FavoriteProvider } from "./context/FavoriteContext";
 import { CartProvider } from "./context/CartContext";
 import ScrollToTop from './components/ScrollToTop';
+import FavoritesPage from "./pages/FavoritesPage";
 
 const App = () => {
   return (
@@ -22,6 +23,7 @@ const App = () => {
                   <Route path="/signin" element={<SignIn />} />
                   <Route path="/signup" element={<SignUp />} />
                   <Route path="/clothes/:id" element={<ClothingDetails />} />
+                  <Route path="/favorites" element={<FavoritesPage/>}/>
                 </Routes>
               </CartProvider>
           </FavoriteProvider>

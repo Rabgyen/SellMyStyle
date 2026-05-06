@@ -28,6 +28,7 @@ export const FavoriteProvider = ( {children} ) => {
     }
 
     const value = {
+        favorite,
         addToFavorite,
         removeFromFavorite,
         isFavorite
