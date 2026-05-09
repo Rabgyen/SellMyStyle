@@ -5,6 +5,7 @@ import { FaShippingFast } from 'react-icons/fa'
 import { CgRedo } from 'react-icons/cg'
 import { FaTrashAlt } from 'react-icons/fa'
 import { useCartContext } from '../context/CartContext'
+import { Link } from 'react-router-dom'
 
 const CartItem = ({ items }) => {
 
@@ -12,13 +13,14 @@ const CartItem = ({ items }) => {
 
   return (
     <div className='group overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.08)]'>
+      <Link to={`/clothes/${items.id}`}>
       <div className='flex flex-col gap-5 p-4 sm:flex-row sm:items-center sm:p-5'>
         <div className='relative shrink-0 overflow-hidden rounded-2xl bg-slate-100 ring-1 ring-black/5'>
           <div className='absolute inset-x-0 top-0 h-20 bg-linear-to-b from-black/10 to-transparent' />
           <img
             src={items.image}
             alt={items.detail}
-            className='h-44 w-full min-w-44 object-cover transition-transform duration-300 group-hover:scale-105 sm:h-40 sm:w-40'
+            className='h-100 w-full min-w-44 object-cover transition-transform duration-300 group-hover:scale-105 sm:h-40 sm:w-40'
           />
         </div>
 
@@ -66,7 +68,7 @@ const CartItem = ({ items }) => {
             </div>
 
             <div className='flex items-center gap-3'>
-              <button className='inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-black' onClick={() => removeFromCart(items.id)}>
+              <button type="button" className='inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-black z-100' onClick={(e) => { e.preventDefault(); e.stopPropagation(); removeFromCart(items.id); }}>
                 <FaTrashAlt className='text-sm' />
                 Remove
               </button>
@@ -74,6 +76,7 @@ const CartItem = ({ items }) => {
           </div>
         </div>
       </div>
+      </Link>
     </div>
   )
 }
