@@ -42,13 +42,14 @@ const NavBar = () => {
             </div>
           )}
 
+          <Link to="/cart">
           <button
             type="button"
             className="inline-flex items-center justify-center rounded-full p-2 text-slate-700 transition hover:bg-slate-100"
             aria-label="Cart"
           >
             <FaShoppingCart aria-hidden="true" />
-          </button>
+          </button></Link>
 
           <Link to="/favorites">
           <button
