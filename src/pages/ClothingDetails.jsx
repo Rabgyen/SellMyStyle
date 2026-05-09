@@ -81,12 +81,11 @@ const ClothingDetails = () => {
           </p>
           <span className="flex gap-4 items-center justify-center">
             {cartItem ? (
-              <button
-                onClick={handleCart}
-                className="bg-black flex items-center justify-center gap-2 text-white w-full rounded-2xl py-4"
-              >
-                View Cart <BsFillCartCheckFill />
-              </button>
+              <Link to="/cart" className="w-full">
+                <button className="bg-black flex items-center justify-center gap-2 text-white w-full rounded-2xl py-4">
+                  View Cart <BsFillCartCheckFill />
+                </button>
+              </Link>
             ) : (
               <button
                 onClick={handleCart}

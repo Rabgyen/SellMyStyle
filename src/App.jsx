@@ -9,6 +9,7 @@ import { FavoriteProvider } from "./context/FavoriteContext";
 import { CartProvider } from "./context/CartContext";
 import ScrollToTop from './components/ScrollToTop';
 import FavoritesPage from "./pages/FavoritesPage";
+import Cart from "./pages/Cart";
 
 const App = () => {
   return (
@@ -24,6 +25,7 @@ const App = () => {
                   <Route path="/signup" element={<SignUp />} />
                   <Route path="/clothes/:id" element={<ClothingDetails />} />
                   <Route path="/favorites" element={<FavoritesPage/>}/>
+                  <Route path="/cart" element={<Cart/>}/>
                 </Routes>
               </CartProvider>
           </FavoriteProvider>

@@ -9,12 +9,14 @@ import heroImage7 from "../assets/image-7.jpg";
 import heroImage8 from "../assets/image-8.jpg";
 import heroImage9 from "../assets/image-9.jpg";
 import heroImage10 from "../assets/image-10.jpg";
+import heroImage11 from "../assets/me.jpg";
 import { FaShippingFast } from "react-icons/fa";
 import { GoChecklist } from "react-icons/go";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
 const Hero = () => {
     const images = [
+        heroImage11,
         heroImage1,
         heroImage2,
         heroImage3,
