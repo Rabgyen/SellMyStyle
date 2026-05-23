@@ -75,7 +75,7 @@ const ClothingDetails = () => {
         </div>
         <div className="flex-1 flex flex-col gap-4 p-6 min-w-80">
           <h1 className="text-2xl md:text-4xl font-semibold">{items.title}</h1>
-          <p className="text-sm md:text-lg">{items.price}</p>
+          <p className="text-sm md:text-lg">Rs. {items.price}</p>
           <p className="text-center p-2 bg-black/10 rounded-lg max-w-25 text-gray-600 text-sm">
             {items.condition}
           </p>

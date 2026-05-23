@@ -26,11 +26,18 @@ export const CartProvider = ({children}) => {
         return cart.some(item => item.id === id)
     }
 
+    let totalamount = 0;
+
+    cart.forEach(item => {
+        totalamount += item.price
+    })
+
     const value ={
         cart,
         addToCart,
         removeFromCart,
-        inCart
+        inCart,
+        totalamount,
     }
 
     return(

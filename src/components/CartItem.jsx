@@ -64,7 +64,7 @@ const CartItem = ({ items }) => {
           <div className='flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:items-center sm:justify-between'>
             <div>
               <p className='text-xs uppercase tracking-[0.24em] text-slate-400'>Price</p>
-              <p className='text-2xl font-semibold text-slate-900'>{items.price}</p>
+              <p className='text-2xl font-semibold text-slate-900'>Rs. {items.price}</p>
             </div>
 
             <div className='flex items-center gap-3'>
