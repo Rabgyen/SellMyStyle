@@ -60,13 +60,15 @@ const NavBar = () => {
             <FaRegHeart aria-hidden="true" />
           </button></Link>
 
-          <button
-            type="button"
-            className="inline-flex items-center justify-center rounded-full p-2 text-slate-700 transition hover:bg-slate-100"
-            aria-label="Account"
-          >
-            <FaRegUser aria-hidden="true" />
-          </button>
+          <Link to="/profile">
+            <button
+              type="button"
+              className="inline-flex items-center justify-center rounded-full p-2 text-slate-700 transition hover:bg-slate-100"
+              aria-label="Account"
+            >
+              <FaRegUser aria-hidden="true" />
+            </button>
+          </Link>
 
         </div>
 
@@ -110,18 +112,18 @@ const NavBar = () => {
       {isMenuOpen ? (
         <div className="border-t border-slate-200 bg-white px-4 py-3 sm:px-6 lg:px-8 md:hidden">
           <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-2">
-            <button type="button" className="rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700">
+            <Link to="/cart" className="rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-200">
               Cart
-            </button>
-            <button type="button" className="rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700">
+            </Link>
+            <Link to="/favorites" className="rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-200">
               Favorites
-            </button>
-            <button type="button" className="rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700">
+            </Link>
+            <Link to="/profile" className="rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-200">
               Account
-            </button>
-            <button type="button" className="rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700">
+            </Link>
+            <Link to="/" className="rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-200">
               More
-            </button>
+            </Link>
           </div>
         </div>
       ) : null}

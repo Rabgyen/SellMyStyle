@@ -10,6 +10,7 @@ import { CartProvider } from "./context/CartContext";
 import ScrollToTop from './components/ScrollToTop';
 import FavoritesPage from "./pages/FavoritesPage";
 import Cart from "./pages/Cart";
+import Profile from "./pages/profile";
 
 const App = () => {
   return (
@@ -26,6 +27,8 @@ const App = () => {
                   <Route path="/clothes/:id" element={<ClothingDetails />} />
                   <Route path="/favorites" element={<FavoritesPage/>}/>
                   <Route path="/cart" element={<Cart/>}/>
+                  <Route path="/profile" element={<Profile/>}/>
+                  <Route path="/account" element={<Profile/>}/>
                 </Routes>
               </CartProvider>
           </FavoriteProvider>
