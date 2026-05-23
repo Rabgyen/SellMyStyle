@@ -33,6 +33,7 @@ const ListingCard = ({ clothes }) => {
         <h2 className="font-semibold text-lg">{clothes.title}</h2>
         <p className="text-gray-400 text-sm">{clothes.category}</p>
         <p className="font-semibold text-gray-900 text-sm">{clothes.price}</p>
+        <p className="absolute text-gray-600 text-xs top-1 left-1 bg-[#EDE9E6] p-1 rounded-sm shadow-2xl font-semibold">{clothes.condition}</p>
       </span>
       </Link>
     </div>
