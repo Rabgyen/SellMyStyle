@@ -32,6 +32,7 @@ export const CartProvider = ({children}) => {
         totalamount += item.price
     })
 
+
     const value ={
         cart,
         addToCart,
