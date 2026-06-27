@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import heroImage1 from "../assets/image-1.jpg";
 import heroImage2 from "../assets/image-2.jpg";
 import heroImage3 from "../assets/image-3.jpg";
 import heroImage4 from "../assets/image-4.jpg";
@@ -9,15 +8,12 @@ import heroImage7 from "../assets/image-7.jpg";
 import heroImage8 from "../assets/image-8.jpg";
 import heroImage9 from "../assets/image-9.jpg";
 import heroImage10 from "../assets/image-10.jpg";
-import heroImage11 from "../assets/me.jpg";
 import { FaShippingFast } from "react-icons/fa";
 import { GoChecklist } from "react-icons/go";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
 const Hero = () => {
     const images = [
-        heroImage11,
-        heroImage1,
         heroImage2,
         heroImage3,
         heroImage4,

@@ -5,6 +5,7 @@ import path from "path"
 import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
+  base: "/SellMyStyle/",
   plugins: [tailwindcss(),react()],
   resolve: {
     alias: {
