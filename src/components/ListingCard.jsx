@@ -2,6 +2,7 @@ import React from "react";
 import { LiaHeartSolid } from "react-icons/lia";
 import { Link } from "react-router-dom";
 import { useFavoriteContext } from "../context/FavoriteContext";
+import { getClothingImageSrc, DEFAULT_CLOTHING_IMAGE } from "../utils/clothingImage";
 
 const ListingCard = ({ clothes }) => {
 
@@ -24,8 +25,11 @@ const ListingCard = ({ clothes }) => {
       <Link to={`/clothes/${clothes.id}`}>
       <div className=" w-full h-64 md:h-72 flex items-center justify-center bg-gray-100 overflow-hidden rounded-md">
         <img
-          src={clothes.image}
+          src={getClothingImageSrc(clothes.image)}
           alt={clothes.title || clothes.category}
+          onError={(event) => {
+            event.currentTarget.src = DEFAULT_CLOTHING_IMAGE;
+          }}
           className="max-h-full max-w-full object-contain transition-transform duration-300 hover:scale-105"
         />
       </div>

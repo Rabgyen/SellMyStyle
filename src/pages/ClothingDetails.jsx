@@ -13,6 +13,7 @@ import { useFavoriteContext } from "../context/FavoriteContext";
 import { useCartContext } from "../context/CartContext";
 import ListingCard from "../components/ListingCard";
 import Footer from "../components/Footer";
+import { getClothingImageSrc, DEFAULT_CLOTHING_IMAGE } from "../utils/clothingImage";
 
 const ClothingDetails = () => {
   const { id } = useParams();
@@ -68,8 +69,11 @@ const ClothingDetails = () => {
       <div className="flex flex-wrap rounded-2xl mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 gap-4 py-10">
         <div className="flex-1 rounded-2xl w-full h-128 overflow-hidden bg-white shadow-2xl sm:h-152 lg:h-176 min-w-80">
           <img
-            src={items?.image}
+            src={getClothingImageSrc(items?.image)}
             alt="clothe"
+            onError={(event) => {
+              event.currentTarget.src = DEFAULT_CLOTHING_IMAGE;
+            }}
             className="h-full w-full object-contain"
           />
         </div>

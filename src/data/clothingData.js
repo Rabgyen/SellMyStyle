@@ -1,4 +1,4 @@
-export const clothes = [
+const rawClothes = [
     {
       id: 1,
       image: "/src/assets/shirt-1.jpg",
@@ -547,3 +547,13 @@ export const clothes = [
       condition: "Thrift",
     },
   ];
+
+const resolveImage = (imagePath) => {
+  const fileName = imagePath.split("/").pop();
+  return new URL(`../assets/${fileName}`, import.meta.url).href;
+};
+
+export const clothes = rawClothes.map((item) => ({
+  ...item,
+  image: resolveImage(item.image),
+}));

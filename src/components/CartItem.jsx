@@ -6,6 +6,7 @@ import { CgRedo } from 'react-icons/cg'
 import { FaTrashAlt } from 'react-icons/fa'
 import { useCartContext } from '../context/CartContext'
 import { Link } from 'react-router-dom'
+import { getClothingImageSrc, DEFAULT_CLOTHING_IMAGE } from '../utils/clothingImage'
 
 const CartItem = ({ items }) => {
 
@@ -18,8 +19,11 @@ const CartItem = ({ items }) => {
         <div className='relative shrink-0 overflow-hidden rounded-2xl bg-slate-100 ring-1 ring-black/5'>
           <div className='absolute inset-x-0 top-0 h-20 bg-linear-to-b from-black/10 to-transparent' />
           <img
-            src={items.image}
+            src={getClothingImageSrc(items.image)}
             alt={items.detail}
+            onError={(event) => {
+              event.currentTarget.src = DEFAULT_CLOTHING_IMAGE;
+            }}
             className='h-100 w-full min-w-44 object-cover transition-transform duration-300 group-hover:scale-105 sm:h-40 sm:w-40'
           />
         </div>
