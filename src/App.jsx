@@ -15,7 +15,7 @@ import Profile from "./pages/profile";
 const App = () => {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
-      <BrowserRouter>
+      <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '')}>
         <CategoryProvider>
           <FavoriteProvider>
             <CartProvider>
