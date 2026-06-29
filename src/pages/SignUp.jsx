@@ -7,6 +7,20 @@ import { Link } from 'react-router-dom'
 const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [formData, setFormData] = useState({
+    fullName: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+  })
+
+  const handleChange = (event) => {
+    const { name, value } = event.target
+    setFormData((current) => ({
+      ...current,
+      [name]: value,
+    }))
+  }
 
   return (
     <main className="flex min-h-screen flex-col bg-white text-slate-900">
@@ -20,12 +34,12 @@ const SignUp = () => {
 
       <section className="mx-auto flex w-full max-w-310 flex-1 items-center justify-center px-6 py-4">
         <div className="mx-auto w-full max-w-85">
-          <h1 className="text-4xl font-semibold leading-none tracking-tight text-[#101219]">Sign up</h1>
-          <p className="mt-2 text-sm text-slate-600">
-            Create your account and get started <span aria-hidden="true">✨</span>
-          </p>
-
           <form className="mt-5" onSubmit={(e) => e.preventDefault()}>
+            <h1 className="text-4xl font-semibold leading-none tracking-tight text-[#101219]">Sign up</h1>
+            <p className="mt-2 text-sm text-slate-600">
+              Create your account and get started <span aria-hidden="true">✨</span>
+            </p>
+
             <button
               type="button"
               className="flex h-11 w-full items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white text-sm font-medium text-slate-700 transition hover:bg-slate-50"
@@ -45,8 +59,11 @@ const SignUp = () => {
             </label>
             <input
               id="name"
+              name="fullName"
               type="text"
               placeholder="E.g. John Doe"
+              value={formData.fullName}
+              onChange={handleChange}
               className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-[#4e46ff]"
             />
 
@@ -55,8 +72,11 @@ const SignUp = () => {
             </label>
             <input
               id="email"
+              name="email"
               type="email"
               placeholder="E.g. johndoe@email.com"
+              value={formData.email}
+              onChange={handleChange}
               className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-[#4e46ff]"
             />
 
@@ -66,8 +86,11 @@ const SignUp = () => {
             <div className="relative">
               <input
                 id="password"
+                name="password"
                 type={showPassword ? 'text' : 'password'}
                 placeholder="Create a password"
+                value={formData.password}
+                onChange={handleChange}
                 className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 pr-10 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-[#4e46ff]"
               />
               <button
@@ -90,8 +113,11 @@ const SignUp = () => {
             <div className="relative">
               <input
                 id="confirmPassword"
+                name="confirmPassword"
                 type={showConfirmPassword ? 'text' : 'password'}
                 placeholder="Re-enter your password"
+                value={formData.confirmPassword}
+                onChange={handleChange}
                 className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 pr-10 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-[#4e46ff]"
               />
               <button

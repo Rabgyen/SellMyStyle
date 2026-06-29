@@ -9,10 +9,12 @@ import {
   FaBars,
   FaTimes,
 } from 'react-icons/fa'
+import { useCategoryContext } from "../context/CategoryContext";
 
 const NavBar = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const { setSearchTerm, searchTerm } = useCategoryContext();
 
   return (
     <header className="sticky top-0 z-1000 border-b border-slate-200 bg-white/95 text-slate-900 shadow-sm backdrop-blur-md">
@@ -37,6 +39,8 @@ const NavBar = () => {
                 placeholder="Search..."
                 className="w-56 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
                 autoFocus
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 onBlur={() => setIsSearchOpen(false)}
               />
             </div>
@@ -90,6 +94,8 @@ const NavBar = () => {
                 placeholder="Search..."
                 className="bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
                 autoFocus
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 onBlur={() => setIsSearchOpen(false)}
               />
             </div>

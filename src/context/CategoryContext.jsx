@@ -6,9 +6,10 @@ export const useCategoryContext = () => useContext(CategoryContext);
 
 export const CategoryProvider = ({ children }) => {
   const [category, setCategory] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
 
   return (
-    <CategoryContext.Provider value={{ category, setCategory }}>
+    <CategoryContext.Provider value={{ category, setCategory, searchTerm, setSearchTerm }}>
       {children}
     </CategoryContext.Provider>
   );

@@ -5,7 +5,7 @@ import { clothes } from "../data/clothingData";
 
 const Listing = ({clothing}) => {
   
-  const {category, setCategory} = useCategoryContext();
+  const { category, setCategory, searchTerm } = useCategoryContext();
 
   return (
     <div className="mx-auto max-w-7xl p-4 sm:px-6 lg:px-8 flex flex-col gap-6">
@@ -32,9 +32,15 @@ const Listing = ({clothing}) => {
       </div>
       <div className="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-6 w-full">
         {clothing
-          .filter((item) =>
-            category === "all" ? true : item.category === category,
-          )
+          .filter((item) => (category === "all" ? true : item.category === category))
+          .filter((item) => {
+            if (!searchTerm) return true;
+            const q = searchTerm.toLowerCase();
+            return (
+              item.title.toLowerCase().includes(q) ||
+              (item.description && item.description.toLowerCase().includes(q))
+            );
+          })
           .map((item) => (
             <ListingCard key={item.image} clothes={item} />
           ))}
