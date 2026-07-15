@@ -21,3 +21,49 @@ exports.signUpUser = (req, res) => {
     );
 
 };
+
+exports.loginUser = (req, res) => {
+
+    console.log("Login route hit");
+    console.log(req.body);
+
+    const { email, password } = req.body;
+
+    db.query(
+        "SELECT * FROM users WHERE email=?",
+        [email],
+        (err, result) => {
+
+            if (err) {
+
+                return res.status(500).json(err);
+
+            }
+
+            if (result.length === 0) {
+                return res.json({
+                    success: false,
+                    field: "email",
+                    message: "User not found"
+                });
+            }
+
+            const user = result[0];
+
+            if (user.password !== password) {
+                return res.json({
+                    success: false,
+                    field: "password",
+                    message: "Incorrect Password"
+                });
+            }
+
+            res.json({
+                success: true,
+                message: "Login Successful"
+            });
+
+        }
+    );
+
+};
