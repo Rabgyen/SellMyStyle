@@ -51,6 +51,7 @@ const SignIn = () => {
       );
 
       if (response.data.success) {
+        localStorage.setItem("isLoggedIn", "true");
         navigate("/");
       } else {
         setErrors((prev) => ({
