@@ -16,6 +16,8 @@ const NavBar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const { setSearchTerm, searchTerm } = useCategoryContext();
 
+  const user_id = localStorage.getItem("user_id");
+
   return (
     <header className="sticky top-0 z-1000 border-b border-slate-200 bg-white/95 text-slate-900 shadow-sm backdrop-blur-md">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-3 px-4 py-3 sm:px-6 lg:px-8">
@@ -64,7 +66,7 @@ const NavBar = () => {
             <FaRegHeart aria-hidden="true" />
           </button></Link>
 
-          <Link to="/profile">
+          <Link to={`/profile/${user_id}`}>
             <button
               type="button"
               className="inline-flex items-center justify-center rounded-full p-2 text-slate-700 transition hover:bg-slate-100"

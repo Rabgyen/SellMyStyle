@@ -39,6 +39,12 @@ const SignUp = () => {
 
       console.log(response.data);
 
+      if (response.data.success && response.data.user) {
+        localStorage.setItem("isLoggedIn", "true");
+        localStorage.setItem("user_id", response.data.user.id);
+        localStorage.setItem("userEmail", response.data.user.email);
+        localStorage.setItem("userName", response.data.user.username);
+      }
        navigate("/");
     } catch (error) {
       console.error(error);

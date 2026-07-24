@@ -52,6 +52,9 @@ const SignIn = () => {
 
       if (response.data.success) {
         localStorage.setItem("isLoggedIn", "true");
+        localStorage.setItem("user_id", response.data.user.user_id);
+        localStorage.setItem("userEmail", response.data.user.email);
+        localStorage.setItem("userName", response.data.user.username);
         navigate("/");
       } else {
         setErrors((prev) => ({
