@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import {
-  FiCreditCard,
   FiHeart,
   FiMail,
   FiMapPin,
@@ -15,42 +14,51 @@ import {
   FiCamera,
   FiBell,
   FiTrendingUp,
-  FiDollarSign,
   FiArchive,
   FiHelpCircle,
-  FiChevronDown,
   FiCheckCircle,
   FiClock,
   FiXCircle,
   FiTruck,
   FiStar,
   FiPlus,
+  FiPhone,
+  FiGlobe,
+  FiHome,
+  FiChevronRight,
+  FiShare2,
 } from "react-icons/fi";
-import { HiOutlineSparkles } from "react-icons/hi2";
 import NavBar from "../components/NavBar";
 import Footer from "../components/Footer";
 import { useCartContext } from "../context/CartContext";
 import { useFavoriteContext } from "../context/FavoriteContext";
+import axios from "axios";
+import SellerVerificationModal from "../components/SellerVerificationModal";
 
-const defaultProfile = {
-  name: "Alex Morgan",
-  email: "alex.morgan@sellmystyle.com",
-  city: "Kathmandu, Nepal",
-  memberSince: "2024",
-  stylePreference: "Minimal streetwear",
-  bio: "Curating easy outfits, clean layers, and standout accessories.",
-  phone: "+977 981-234-5678",
+/* ─── helpers ─── */
+const getInitials = (name) =>
+  name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("");
+
+const getStatusBadge = (status) => {
+  const map = {
+    delivered: { bg: "bg-emerald-50", text: "text-emerald-600", icon: <FiCheckCircle className="w-3.5 h-3.5" /> },
+    shipped:   { bg: "bg-sky-50",     text: "text-sky-600",     icon: <FiTruck className="w-3.5 h-3.5" /> },
+    processing:{ bg: "bg-amber-50",   text: "text-amber-600",   icon: <FiClock className="w-3.5 h-3.5" /> },
+    cancelled: { bg: "bg-red-50",     text: "text-red-500",     icon: <FiXCircle className="w-3.5 h-3.5" /> },
+    active:    { bg: "bg-emerald-50", text: "text-emerald-600", icon: <FiCheckCircle className="w-3.5 h-3.5" /> },
+    sold:      { bg: "bg-violet-50",  text: "text-violet-600",  icon: <FiStar className="w-3.5 h-3.5" /> },
+    pending:   { bg: "bg-amber-50",   text: "text-amber-600",   icon: <FiClock className="w-3.5 h-3.5" /> },
+    draft:     { bg: "bg-slate-100",  text: "text-slate-500",   icon: <FiArchive className="w-3.5 h-3.5" /> },
+  };
+  return map[status] || { bg: "bg-slate-100", text: "text-slate-500", icon: <FiHelpCircle className="w-3.5 h-3.5" /> };
 };
 
-const styleTags = [
-  "Weekend layers",
-  "Neutral tones",
-  "Statement accessories",
-  "Comfort first",
-  "Vintage finds",
-  "Sustainable fashion",
-];
-
+/* ─── mock data ─── */
 const mockOrders = [
   { id: "ORD-2024-001", date: "2024-12-15", status: "delivered", items: 3, total: 8450, itemsPreview: ["Blue Casual Shirt", "Slim Fit Pants", "Running Shoes"] },
   { id: "ORD-2024-002", date: "2024-11-28", status: "delivered", items: 1, total: 3500, itemsPreview: ["Wrist Watch"] },
@@ -65,571 +73,644 @@ const mockListings = [
   { id: "LST-004", title: "Oversized Linen Shirt", price: 2800, status: "draft", views: 0, likes: 0, image: "/src/assets/shirt-9.jpg" },
 ];
 
-const getInitials = (name) =>
-  name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
-    .join("");
+const styleTags = [
+  "Weekend layers", "Neutral tones", "Statement accessories",
+  "Comfort first", "Vintage finds", "Sustainable fashion",
+];
 
-const getStatusBadge = (status) => {
-  const styles = {
-    delivered: "bg-green-100 text-green-700",
-    shipped: "bg-blue-100 text-blue-700",
-    processing: "bg-amber-100 text-amber-700",
-    cancelled: "bg-red-100 text-red-700",
-    active: "bg-green-100 text-green-700",
-    sold: "bg-purple-100 text-purple-700",
-    pending: "bg-amber-100 text-amber-700",
-    draft: "bg-slate-100 text-slate-700",
-  };
-  const icons = {
-    delivered: <FiCheckCircle className="w-3.5 h-3.5" />,
-    shipped: <FiTruck className="w-3.5 h-3.5" />,
-    processing: <FiClock className="w-3.5 h-3.5" />,
-    cancelled: <FiXCircle className="w-3.5 h-3.5" />,
-    active: <FiCheckCircle className="w-3.5 h-3.5" />,
-    sold: <FiDollarSign className="w-3.5 h-3.5" />,
-    pending: <FiClock className="w-3.5 h-3.5" />,
-    draft: <FiArchive className="w-3.5 h-3.5" />,
-  };
-  return { className: styles[status] || "bg-slate-100 text-slate-700", icon: icons[status] || <FiHelpCircle className="w-3.5 h-3.5" /> };
-};
-
+/* ────────────────────────────────────────────────────────────── */
+/*  Profile page                                                  */
+/* ────────────────────────────────────────────────────────────── */
 const Profile = () => {
   const navigate = useNavigate();
   const { cart } = useCartContext();
   const { favorite } = useFavoriteContext();
+
   const [activeTab, setActiveTab] = useState("overview");
-  const [profile, setProfile] = useState(defaultProfile);
-  const [initials, setInitials] = useState(getInitials(defaultProfile.name));
+  const [showSellerModal, setShowSellerModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [editForm, setEditForm] = useState(defaultProfile);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [editForm, setEditForm] = useState({});
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState(null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [avatarError, setAvatarError] = useState("");
 
+  const { id: paramId } = useParams();
+  const userId = paramId || localStorage.getItem("user_id");
+
+  /* ─── fetch user ─── */
   useEffect(() => {
-    const stored = localStorage.getItem("userProfile");
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      setProfile(parsed);
-      setInitials(getInitials(parsed.name));
-      setEditForm(parsed);
-    }
-    const loggedInUser = localStorage.getItem("userEmail");
-    if (loggedInUser && !stored) {
-      setProfile((prev) => ({ ...prev, email: loggedInUser }));
-      setEditForm((prev) => ({ ...prev, email: loggedInUser }));
-    }
-  }, []);
+    const fetchUser = async () => {
+      if (!userId) { setLoading(false); return; }
+      try {
+        setLoading(true);
+        const response = await axios.get(`http://localhost:5000/profile/${userId}`);
+        if (response.data.success) {
+          setUser(response.data.user);
+          setEditForm(response.data.user);
+        }
+      } catch (err) { console.error(err); }
+      finally { setLoading(false); }
+    };
+    fetchUser();
+  }, [userId]);
 
-  const saveProfile = () => {
-    localStorage.setItem("userProfile", JSON.stringify(editForm));
-    setProfile(editForm);
-    setInitials(getInitials(editForm.name));
+  const initials = user?.username ? getInitials(user.username) : "?";
+  const location = [user?.city, user?.country].filter(Boolean).join(", ") || "Not set";
+
+  /* ─── save profile ─── */
+  const saveProfile = async () => {
+    try {
+      await axios.put(`http://localhost:5000/profile/${userId}`, {
+        username: editForm.username, phone: editForm.phone,
+        country: editForm.country, city: editForm.city,
+        bio: editForm.bio, nationality: editForm.nationality,
+        postal_code: editForm.postal_code, street_address: editForm.street_address,
+      });
+      setUser(editForm);
+    } catch (err) { console.error(err); }
     setIsEditing(false);
+  };
+
+  /* ─── avatar handlers ─── */
+  const handleAvatarChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setAvatarError("");
+    const allowed = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"];
+    if (!allowed.includes(file.type)) { setAvatarError("Only JPG, PNG, GIF or WEBP images are allowed."); return; }
+    if (file.size > 5 * 1024 * 1024) { setAvatarError("Image must be smaller than 5 MB."); return; }
+    setAvatarFile(file);
+    setAvatarPreview(URL.createObjectURL(file));
+  };
+
+  const handleAvatarUpload = async () => {
+    if (!avatarFile) { setAvatarError("Please select an image first."); return; }
+    try {
+      setAvatarUploading(true);
+      setAvatarError("");
+      const formData = new FormData();
+      formData.append("profilePicture", avatarFile);
+      const response = await axios.post(
+        `http://localhost:5000/profile/${userId}/avatar`,
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
+      if (response.data.success) {
+        setUser((prev) => ({ ...prev, profile_picture: response.data.profile_picture }));
+        setShowAvatarModal(false);
+        setAvatarFile(null);
+        setAvatarPreview(null);
+      } else { setAvatarError(response.data.message || "Upload failed."); }
+    } catch (err) { setAvatarError(err.response?.data?.message || "Upload failed. Please try again."); }
+    finally { setAvatarUploading(false); }
   };
 
   const handleLogout = () => {
     localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("user_id");
+    localStorage.removeItem("userEmail");
+    localStorage.removeItem("userName");
     navigate("/signup", { replace: true });
   };
 
+  const dismissAvatarModal = () => {
+    setShowAvatarModal(false);
+    setAvatarPreview(null);
+    setAvatarFile(null);
+    setAvatarError("");
+  };
+
+  /* ─── tabs ─── */
   const tabs = [
-    { id: "overview", label: "Overview", icon: <FiUser className="w-4 h-4" /> },
-    { id: "orders", label: "Orders", icon: <FiPackage className="w-4 h-4" />, count: mockOrders.length },
-    { id: "listings", label: "My Listings", icon: <FiShoppingBag className="w-4 h-4" />, count: mockListings.filter(l => l.status !== "draft").length },
-    { id: "settings", label: "Settings", icon: <FiSettings className="w-4 h-4" /> },
+    { id: "overview", label: "Overview", icon: FiUser },
+    { id: "orders",   label: "Orders",   icon: FiPackage, count: mockOrders.length },
+    { id: "listings", label: "Listings",  icon: FiShoppingBag, count: mockListings.filter((l) => l.status !== "draft").length },
+    { id: "settings", label: "Settings",  icon: FiSettings },
   ];
 
-  const stats = [
-    { label: "Total Spent", value: "₨42,350", icon: FiDollarSign, color: "text-emerald-600", bg: "bg-emerald-50" },
-    { label: "Orders", value: mockOrders.length.toString(), icon: FiPackage, color: "text-indigo-600", bg: "bg-indigo-50" },
-    { label: "Active Listings", value: mockListings.filter(l => l.status === "active").length.toString(), icon: FiTrendingUp, color: "text-amber-600", bg: "bg-amber-50" },
-    { label: "Wishlist", value: favorite.length.toString(), icon: FiHeart, color: "text-rose-600", bg: "bg-rose-50" },
-  ];
+  /* ─── loading / not found ─── */
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-10 w-10 rounded-full border-[3px] border-slate-200 border-t-indigo-500 animate-spin" />
+          <p className="text-slate-400 text-sm tracking-wide">Loading profile…</p>
+        </div>
+      </div>
+    );
+  }
 
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <p className="text-slate-400">User not found.</p>
+      </div>
+    );
+  }
+
+  /* ────────────────────────── RENDER ────────────────────────── */
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
+    <div className="min-h-screen bg-white text-slate-800">
       <NavBar />
 
-      <main className="relative overflow-hidden">
-        <div className="absolute inset-x-0 top-0 -z-10 h-80 bg-[radial-gradient(circle_at_top_left,rgba(79,70,229,0.18),transparent_42%),radial-gradient(circle_at_top_right,rgba(251,191,36,0.14),transparent_36%)]" />
+      <main className="mx-auto max-w-2xl px-4 pt-10 pb-16 sm:px-6">
 
-        <section className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-          {/* Profile Header */}
-          <div className="rounded-3xl border border-slate-200 bg-white/95 p-6 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur">
-            <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-center gap-4">
-                <div className="relative">
-                  <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl bg-linear-to-br from-indigo-600 via-violet-600 to-amber-400 text-3xl font-bold text-white shadow-lg shadow-indigo-200">
-                    {initials}
-                  </div>
-                  <button
-                    onClick={() => setShowAvatarModal(true)}
-                    className="absolute bottom-0 right-0 rounded-full bg-white p-2 text-indigo-600 shadow-lg hover:bg-slate-50 transition"
-                    aria-label="Change avatar"
-                  >
-                    <FiCamera className="w-5 h-5" />
-                  </button>
-                </div>
-                <div>
-                  <p className="inline-flex items-center gap-2 rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-indigo-700">
-                    <HiOutlineSparkles aria-hidden="true" />
-                    Your Profile
-                  </p>
-                  <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
-                    {isEditing ? (
-                      <input
-                        value={editForm.name}
-                        onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                        className="bg-transparent border-b-2 border-indigo-500 focus:outline-none text-inherit font-inherit w-auto"
-                      />
-                    ) : (
-                      profile.name
-                    )}
-                  </h1>
-                  <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
-                    {isEditing ? (
-                      <textarea
-                        value={editForm.bio}
-                        onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
-                        className="bg-transparent border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full max-w-md"
-                        rows={2}
-                      />
-                    ) : (
-                      profile.bio
-                    )}
-                  </p>
-                </div>
-              </div>
+        {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+        {/*  PINTEREST-STYLE PROFILE HEADER                        */}
+        {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+        <header className="flex flex-col items-center text-center">
 
-              <div className="flex flex-wrap items-center gap-3">
-                <div className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5 text-sm text-slate-600">
-                  <FiMail className="w-4 h-4 text-slate-400" />
-                  {isEditing ? (
-                    <input
-                      value={editForm.email}
-                      onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                      className="bg-transparent border-none focus:outline-none text-sm w-48"
-                    />
-                  ) : (
-                    profile.email
-                  )}
-                </div>
-                <div className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5 text-sm text-slate-600">
-                  <FiMapPin className="w-4 h-4 text-slate-400" />
-                  {profile.city}
-                </div>
-                {isEditing ? (
-                  <div className="flex gap-2">
-                    <button onClick={saveProfile} className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700">
-                      Save
-                    </button>
-                    <button onClick={() => { setEditForm(profile); setIsEditing(false); }} className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50">
-                      Cancel
-                    </button>
-                  </div>
-                ) : (
-                  <button onClick={() => setIsEditing(true)} className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50">
-                    <FiEdit className="w-4 h-4" />
-                    Edit Profile
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Stats Cards */}
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {stats.map((stat) => {
-              const Icon = stat.icon;
-              return (
-                <article key={stat.label} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-sm font-medium text-slate-500">{stat.label}</p>
-                      <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">{stat.value}</p>
-                    </div>
-                    <span className={`inline-flex h-12 w-12 items-center justify-center rounded-2xl ${stat.bg} ${stat.color}`}>
-                      <Icon aria-hidden="true" className="w-6 h-6" />
-                    </span>
-                  </div>
-                  <p className="mt-4 text-xs leading-5 text-slate-500">Updated just now</p>
-                </article>
-              );
-            })}
-          </div>
-
-          {/* Tab Navigation */}
-          <div className="mt-8 rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-            <nav className="flex border-b border-slate-200" aria-label="Profile sections">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-4 text-sm font-medium transition relative ${activeTab === tab.id
-                    ? "text-indigo-600 bg-indigo-50"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
-                  }`}
-                >
-                  <span className="flex items-center gap-2">{tab.icon} {tab.label}</span>
-                  {tab.count !== undefined && tab.count > 0 && (
-                    <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-indigo-100 px-1.5 text-[11px] font-semibold text-indigo-700">
-                      {tab.count}
-                    </span>
-                  )}
-                </button>
-              ))}
-            </nav>
-
-            {/* Tab Panels */}
-            <div className="p-6">
-              {activeTab === "overview" && (
-                <div className="space-y-8">
-                  {/* Account Details */}
-                  <section>
-                    <div className="flex items-center justify-between gap-3 mb-5">
-                      <h2 className="text-lg font-semibold text-slate-950">Account Details</h2>
-                      <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-slate-500">Private</span>
-                    </div>
-                    <dl className="space-y-4">
-                      {[
-                        { label: "Full Name", value: profile.name, icon: FiUser },
-                        { label: "Email Address", value: profile.email, icon: FiMail },
-                        { label: "Phone Number", value: profile.phone || "Not set", icon: FiMapPin },
-                        { label: "Location", value: profile.city, icon: FiMapPin },
-                        { label: "Style Preference", value: profile.stylePreference, icon: FiPackage },
-                        { label: "Member Since", value: profile.memberSince, icon: FiUser },
-                      ].map((item) => (
-                        <div key={item.label} className="flex items-center justify-between gap-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-                          <dt className="flex items-center gap-3 text-slate-500">
-                            <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white text-slate-400">
-                              <item.icon className="w-4 h-4" aria-hidden="true" />
-                            </span>
-                            <span>{item.label}</span>
-                          </dt>
-                          <dd className="font-medium text-slate-900 text-right max-w-xs truncate">{item.value}</dd>
-                        </div>
-                      ))}
-                    </dl>
-                  </section>
-
-                  {/* Style Tags */}
-                  <section>
-                    <h2 className="text-lg font-semibold text-slate-950 mb-4">Style Preferences</h2>
-                    <div className="flex flex-wrap gap-2">
-                      {styleTags.map((tag) => (
-                        <span key={tag} className="rounded-full border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-600">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  </section>
-
-                  {/* Seller CTA */}
-                  <section className="rounded-2xl bg-linear-to-r from-indigo-600 via-violet-600 to-amber-400 p-6 text-white shadow-lg shadow-indigo-200">
-                    <div className="max-w-xl">
-                      <p className="text-sm font-medium uppercase tracking-[0.2em] text-indigo-100">Want to Start Selling?</p>
-                      <h3 className="mt-2 text-2xl font-semibold">Become a Verified Seller</h3>
-                      <p className="mt-2 text-sm leading-6 text-indigo-100/90">
-                        Join our community of sellers. List your items, reach buyers, and grow your fashion business.
-                      </p>
-                      <Link to="/signup" className="mt-4 inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-50">
-                        Apply Now <FiPlus className="w-4 h-4" />
-                      </Link>
-                    </div>
-                  </section>
-                </div>
-              )}
-
-              {activeTab === "orders" && (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-semibold text-slate-950">Order History</h2>
-                    <span className="text-sm text-slate-500">{mockOrders.length} orders</span>
-                  </div>
-                  <div className="rounded-xl border border-slate-200 overflow-hidden">
-                    <table className="w-full" role="table">
-                      <thead>
-                        <tr className="bg-slate-50 border-b border-slate-200">
-                          <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">Order</th>
-                          <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">Date</th>
-                          <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">Items</th>
-                          <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">Total</th>
-                          <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">Status</th>
-                          <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">Action</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-200">
-                        {mockOrders.map((order) => {
-                          const { className, icon } = getStatusBadge(order.status);
-                          return (
-                            <tr key={order.id} className="hover:bg-slate-50 transition">
-                              <td className="px-4 py-4 font-medium text-slate-900">{order.id}</td>
-                              <td className="px-4 py-4 text-slate-600">{new Date(order.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</td>
-                              <td className="px-4 py-4">
-                                <div className="text-sm text-slate-900">{order.items} item{order.items > 1 ? "s" : ""}</div>
-                                <div className="text-xs text-slate-500 line-clamp-1">{order.itemsPreview.join(", ")}</div>
-                              </td>
-                              <td className="px-4 py-4 font-medium text-slate-900">₨{order.total.toLocaleString()}</td>
-                              <td className="px-4 py-4">
-                                <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${className}`}>
-                                  {icon} {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                                </span>
-                              </td>
-                              <td className="px-4 py-4">
-                                <button className="text-sm font-medium text-indigo-600 hover:text-indigo-700 hover:underline">View</button>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
-
-              {activeTab === "listings" && (
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-semibold text-slate-950">My Listings</h2>
-                    <Link to="/sell" className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700">
-                      <FiPlus className="w-4 h-4" /> New Listing
-                    </Link>
-                  </div>
-                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    {mockListings.map((listing) => {
-                      const { className, icon } = getStatusBadge(listing.status);
-                      return (
-                        <article key={listing.id} className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-sm transition hover:shadow-lg">
-                          <div className="relative aspect-square bg-slate-100 overflow-hidden">
-                            <img
-                              src={listing.image}
-                              alt={listing.title}
-                              className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
-                              onError={(e) => { e.currentTarget.src = "/src/assets/shirt-1.jpg"; }}
-                            />
-                            <span className={`absolute top-3 right-3 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium ${className}`}>
-                              {icon} {listing.status.charAt(0).toUpperCase() + listing.status.slice(1)}
-                            </span>
-                          </div>
-                          <div className="p-4 space-y-3">
-                            <h3 className="font-semibold text-slate-950 line-clamp-1">{listing.title}</h3>
-                            <p className="text-xl font-bold text-indigo-600">₨{listing.price.toLocaleString()}</p>
-                            <div className="flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100">
-                              <span className="flex items-center gap-1"><FiStar className="w-3.5 h-3.5" /> {listing.likes}</span>
-                              <span className="flex items-center gap-1"><FiTrendingUp className="w-3.5 h-3.5" /> {listing.views}</span>
-                            </div>
-                            <div className="flex gap-2 pt-2">
-                              <button className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50">Edit</button>
-                              <button className="flex-1 rounded-lg bg-slate-900 px-3 py-2 text-xs font-medium text-white hover:bg-slate-700">View</button>
-                            </div>
-                          </div>
-                        </article>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {activeTab === "settings" && (
-                <div className="max-w-2xl space-y-8">
-                  {/* Notifications */}
-                  <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-950">
-                      <FiBell className="w-5 h-5 text-indigo-600" />
-                      Notifications
-                    </h2>
-                    <p className="mt-2 text-sm text-slate-600">Choose what emails and push notifications you receive.</p>
-                    <div className="mt-5 space-y-4">
-                      {[
-                        { label: "Order Updates", desc: "Shipping, delivery, and order confirmations", default: true },
-                        { label: "Promotions & Offers", desc: "Sales, discounts, and special deals", default: true },
-                        { label: "New Arrivals", desc: "Weekly updates on fresh inventory", default: false },
-                        { label: "Price Drops", desc: "Alerts when saved items go on sale", default: true },
-                        { label: "Seller Updates", desc: "Listing performance and buyer messages", default: true },
-                      ].map((item, i) => (
-                        <label key={i} className="flex items-center justify-between gap-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 cursor-pointer hover:bg-white transition">
-                          <div>
-                            <p className="font-medium text-slate-900">{item.label}</p>
-                            <p className="text-sm text-slate-500">{item.desc}</p>
-                          </div>
-                          <input type="checkbox" defaultChecked={item.default} className="h-5 w-5 rounded border-slate-300 accent-indigo-600" />
-                        </label>
-                      ))}
-                    </div>
-                  </section>
-
-                  {/* Security */}
-                  <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-950">
-                      <FiShield className="w-5 h-5 text-indigo-600" />
-                      Security
-                    </h2>
-                    <p className="mt-2 text-sm text-slate-600">Manage your password and login security.</p>
-                    <div className="mt-5 space-y-4">
-                      <div className="flex items-center justify-between gap-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-                        <div>
-                          <p className="font-medium text-slate-900">Two-Step Verification</p>
-                          <p className="text-sm text-slate-500">Add an extra layer of security to your account</p>
-                        </div>
-                        <button className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-white">Enable</button>
-                      </div>
-                      <div className="flex items-center justify-between gap-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-                        <div>
-                          <p className="font-medium text-slate-900">Change Password</p>
-                          <p className="text-sm text-slate-500">Last changed 3 months ago</p>
-                        </div>
-                        <button className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-white">Update</button>
-                      </div>
-                      <div className="flex items-center justify-between gap-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-                        <div>
-                          <p className="font-medium text-slate-900">Active Sessions</p>
-                          <p className="text-sm text-slate-500">2 devices currently logged in</p>
-                        </div>
-                        <button className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-white">Manage</button>
-                      </div>
-                    </div>
-                  </section>
-
-                  {/* Appearance */}
-                  <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-950">
-                      <FiSettings className="w-5 h-5 text-indigo-600" />
-                      Appearance
-                    </h2>
-                    <p className="mt-2 text-sm text-slate-600">Customize how SellMyStyle looks on your device.</p>
-                    <div className="mt-5">
-                      <p className="text-sm font-medium text-slate-700 mb-3">Theme</p>
-                      <div className="flex gap-4">
-                        {["Light", "Dark", "System"].map((theme) => (
-                          <label key={theme} className="flex-1 rounded-xl border-2 border-slate-200 bg-white p-4 text-center cursor-pointer transition hover:border-indigo-300">
-                            <input type="radio" name="theme" defaultChecked={theme === "System"} className="sr-only" />
-                            <p className="font-medium text-slate-900">{theme}</p>
-                            <p className="text-xs text-slate-500 mt-1">{theme === "System" ? "Matches your device" : `${theme} mode always`}</p>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  </section>
-
-                  {/* Danger Zone */}
-                  <section className="rounded-2xl border border-red-200 bg-red-50 p-6 shadow-sm">
-                    <h2 className="flex items-center gap-2 text-lg font-semibold text-red-900">
-                      <FiXCircle className="w-5 h-5" />
-                      Danger Zone
-                    </h2>
-                    <p className="mt-2 text-sm text-red-700">Irreversible actions. Please proceed with caution.</p>
-                    <div className="mt-5 flex flex-wrap gap-3">
-                      <button className="rounded-lg border-2 border-red-300 bg-white px-4 py-2 text-sm font-medium text-red-600 transition hover:bg-red-50 hover:border-red-400">
-                        Deactivate Account
-                      </button>
-                      <button className="rounded-lg border-2 border-red-300 bg-white px-4 py-2 text-sm font-medium text-red-600 transition hover:bg-red-50 hover:border-red-400">
-                        Delete All Data
-                      </button>
-                    </div>
-                  </section>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Quick Actions Sidebar (Mobile) */}
-          <div className="mt-8 hidden lg:block">
-            <aside className="space-y-6">
-              <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                <h2 className="text-lg font-semibold text-slate-950">Quick Actions</h2>
-                <p className="mt-2 text-sm text-slate-600">Jump to frequently used sections.</p>
-                <div className="mt-5 space-y-2">
-                  {[
-                    { title: "View Favorites", desc: "Items you've saved for later", to: "/favorites", icon: FiHeart },
-                    { title: "Go to Cart", desc: "Complete your purchase", to: "/cart", icon: FiShoppingBag },
-                    { title: "Start Selling", desc: "List your first item", to: "/sell", icon: FiPlus },
-                    { title: "Help Center", desc: "FAQs and support", to: "/help", icon: FiHelpCircle },
-                  ].map((action) => (
-                    <Link key={action.title} to={action.to} className="group block rounded-xl border border-slate-200 bg-slate-50 p-4 transition hover:-translate-x-0.5 hover:border-indigo-200 hover:bg-white hover:shadow-md">
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-3">
-                          <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
-                            <action.icon className="w-4.5 h-4.5" aria-hidden="true" />
-                          </span>
-                          <h3 className="font-semibold text-slate-950">{action.title}</h3>
-                        </div>
-                        <FiChevronDown className="w-4 h-4 text-slate-400 group-hover:text-indigo-600 transition" />
-                      </div>
-                      <p className="mt-2 text-sm leading-6 text-slate-600 pl-10">{action.desc}</p>
-                    </Link>
-                  ))}
-                  <button onClick={handleLogout} className="group w-full rounded-xl border border-red-200 bg-red-50 p-4 transition hover:bg-red-100 hover:border-red-300 text-left">
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-3">
-                        <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-red-100 text-red-600">
-                          <FiLogOut className="w-4.5 h-4.5" aria-hidden="true" />
-                        </span>
-                        <h3 className="font-semibold text-red-700">Log Out</h3>
-                      </div>
-                    </div>
-                  </button>
-                </div>
-              </section>
-
-              {/* Shopping Snapshot */}
-              <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                <h2 className="text-lg font-semibold text-slate-950">Shopping Snapshot</h2>
-                <div className="mt-5 grid gap-4 sm:grid-cols-2">
-                  <div className="rounded-xl bg-slate-50 p-4 text-center">
-                    <p className="text-sm font-medium text-slate-500">Wishlist Items</p>
-                    <p className="mt-2 text-4xl font-bold text-slate-950">{favorite.length}</p>
-                    <p className="mt-1 text-xs text-slate-500">{favorite.length === 0 ? "Start saving items you love" : "Items waiting for you"}</p>
-                  </div>
-                  <div className="rounded-xl bg-slate-50 p-4 text-center">
-                    <p className="text-sm font-medium text-slate-500">Cart Items</p>
-                    <p className="mt-2 text-4xl font-bold text-slate-950">{cart.length}</p>
-                    <p className="mt-1 text-xs text-slate-500">{cart.length === 0 ? "Your cart is empty" : "Ready for checkout"}</p>
-                  </div>
-                </div>
-              </section>
-            </aside>
-          </div>
-        </section>
-      </main>
-
-      {/* Avatar Modal */}
-      {showAvatarModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setShowAvatarModal(false)}>
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-semibold text-slate-950 mb-4">Update Avatar</h3>
-            <p className="text-sm text-slate-600 mb-6">Upload a profile photo (JPG, PNG up to 5MB)</p>
+          {/* Avatar with gradient halo */}
+          <div className="relative">
+            {/* Gradient glow ring */}
+            <div className="absolute -inset-2 rounded-full bg-linear-to-br from-indigo-300 via-violet-200 to-purple-300 opacity-60 blur-md" />
             <div className="relative">
-              <div className="flex h-28 w-28 items-center justify-center rounded-2xl bg-slate-100 mx-auto mb-4">
-                <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-linear-to-br from-indigo-600 via-violet-600 to-amber-400 text-3xl font-bold text-white">
+              {user.profile_picture ? (
+                <img
+                  src={`http://localhost:5000${user.profile_picture}`}
+                  alt={user.username}
+                  className="h-28 w-28 rounded-full object-cover ring-4 ring-white relative z-10"
+                />
+              ) : (
+                <div className="flex h-28 w-28 items-center justify-center rounded-full bg-linear-to-br from-indigo-400 to-violet-500 text-3xl font-bold text-white ring-4 ring-white relative z-10">
                   {initials}
                 </div>
-              </div>
-              <input
-                type="file"
-                accept="image/*"
-                className="sr-only"
-                id="avatar-upload"
-              />
-              <label htmlFor="avatar-upload" className="block w-full rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 p-6 text-center cursor-pointer transition hover:border-indigo-400 hover:bg-indigo-50">
-                <FiCamera className="w-8 h-8 mx-auto text-slate-400" />
-                <p className="mt-2 text-sm font-medium text-slate-700">Click to upload</p>
-                <p className="text-xs text-slate-500">or drag and drop</p>
-              </label>
+              )}
+              {/* Camera button */}
+              <button
+                onClick={() => { setAvatarFile(null); setAvatarPreview(null); setAvatarError(""); setShowAvatarModal(true); }}
+                className="absolute bottom-1 right-1 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-white text-slate-500 shadow-md ring-1 ring-slate-100 transition hover:text-indigo-500 hover:ring-indigo-200"
+                aria-label="Change avatar"
+              >
+                <FiCamera className="w-3.5 h-3.5" />
+              </button>
             </div>
-            <div className="mt-6 flex gap-3">
-              <button onClick={() => setShowAvatarModal(false)} className="flex-1 rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50">
+          </div>
+
+          {/* Name */}
+          <h1 className="mt-5 text-2xl font-bold text-slate-900 tracking-tight">
+            {user.username}
+          </h1>
+
+          {/* Bio */}
+          <p className="mt-2 max-w-sm text-sm text-slate-400 leading-relaxed line-clamp-2">
+            {user.bio || "No bio yet"}
+          </p>
+
+          {/* Email + Location */}
+          <div className="mt-3 flex items-center gap-1.5 text-[13px] text-slate-400">
+            <FiMail className="w-3.5 h-3.5 text-slate-300" />
+            <span>{user.email}</span>
+          </div>
+          <div className="mt-1 flex items-center gap-1.5 text-[13px] text-slate-400">
+            <FiMapPin className="w-3.5 h-3.5 text-slate-300" />
+            <span>{location}</span>
+          </div>
+
+          {/* Followers · Following — Pinterest style inline */}
+          <p className="mt-4 text-sm text-slate-600 font-medium">
+            <span className="font-bold text-slate-800">{user?.followers_count ?? 0}</span> follower{(user?.followers_count ?? 0) !== 1 ? "s" : ""}
+            <span className="mx-2 text-slate-300">·</span>
+            <span className="font-bold text-slate-800">{user?.following_count ?? 0}</span> following
+          </p>
+
+          {/* Action Buttons — pill shaped */}
+          <div className="mt-5 flex items-center gap-3">
+            <button className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-6 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-200">
+              <FiShare2 className="w-4 h-4" />
+              Share
+            </button>
+            <button
+              onClick={() => setIsEditing(true)}
+              className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-6 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-200"
+            >
+              <FiEdit className="w-4 h-4" />
+              Edit profile
+            </button>
+          </div>
+        </header>
+
+        {/* Divider */}
+        <div className="my-8 border-t border-slate-100" />
+
+        {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+        {/*  TAB NAVIGATION                                        */}
+        {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+        <nav className="flex justify-center gap-1 rounded-full bg-slate-50 p-1" aria-label="Profile sections">
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 rounded-full px-5 py-2 text-sm font-medium transition-all duration-200 ${
+                  isActive
+                    ? "bg-white text-slate-800 shadow-sm"
+                    : "text-slate-400 hover:text-slate-600"
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+                {tab.label}
+                {tab.count != null && tab.count > 0 && (
+                  <span className={`text-[11px] font-semibold rounded-full px-1.5 py-0.5 ${
+                    isActive ? "bg-indigo-50 text-indigo-500" : "bg-slate-100 text-slate-400"
+                  }`}>
+                    {tab.count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+        {/*  TAB CONTENT                                           */}
+        {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+        <div className="mt-8">
+
+          {/* ── OVERVIEW ── */}
+          {activeTab === "overview" && (
+            <div className="space-y-6 animate-[fadeIn_0.25s_ease]">
+
+              
+
+              {/* Account Details */}
+              <div className="rounded-2xl border border-slate-100 bg-white">
+                <div className="flex items-center justify-between px-5 py-4 border-b border-slate-50">
+                  <h2 className="text-sm font-semibold text-slate-700">Account Details</h2>
+                  {isEditing ? (
+                    <div className="flex gap-2">
+                      <button onClick={saveProfile} className="rounded-full bg-indigo-500 px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-indigo-600">
+                        Save
+                      </button>
+                      <button onClick={() => { setEditForm(user); setIsEditing(false); }} className="rounded-full border border-slate-200 px-4 py-1.5 text-xs font-medium text-slate-500 transition hover:bg-slate-50">
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <button onClick={() => setIsEditing(true)} className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-400 transition hover:text-indigo-500">
+                      <FiEdit className="w-3 h-3" /> Edit
+                    </button>
+                  )}
+                </div>
+
+                <div className="divide-y divide-slate-50">
+                  {[
+                    { label: "Username",    value: user.username,       icon: FiUser,   editable: true,  field: "username" },
+                    { label: "Email",        value: user.email,          icon: FiMail,   editable: false },
+                    { label: "Phone",        value: user.phone,          icon: FiPhone,  editable: true,  field: "phone" },
+                    { label: "Nationality",  value: user.nationality,    icon: FiGlobe,  editable: true,  field: "nationality" },
+                    { label: "Country",      value: user.country,        icon: FiMapPin, editable: true,  field: "country" },
+                    { label: "City",         value: user.city,           icon: FiMapPin, editable: true,  field: "city" },
+                    { label: "Address",      value: user.street_address, icon: FiHome,   editable: true,  field: "street_address" },
+                  ].map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <div key={item.label} className="flex items-center gap-3 px-5 py-3.5">
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-50 text-slate-300">
+                          <Icon className="w-3.5 h-3.5" />
+                        </span>
+                        <span className="w-24 shrink-0 text-xs text-slate-400">{item.label}</span>
+                        <span className="flex-1 text-sm text-slate-700 text-right">
+                          {isEditing && item.editable ? (
+                            <input
+                              value={editForm[item.field] || ""}
+                              onChange={(e) => setEditForm({ ...editForm, [item.field]: e.target.value })}
+                              className="w-full text-right bg-transparent border-b border-indigo-200 focus:border-indigo-400 focus:outline-none py-0.5 text-sm"
+                            />
+                          ) : (
+                            <span className={item.value ? "font-medium" : "text-slate-300"}>{item.value || "Not set"}</span>
+                          )}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Bio */}
+              <div className="rounded-2xl border border-slate-100 bg-white p-5">
+                <h2 className="text-sm font-semibold text-slate-700">Bio</h2>
+                {isEditing ? (
+                  <textarea
+                    value={editForm.bio || ""}
+                    onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
+                    className="mt-3 w-full rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm text-slate-600 focus:border-indigo-300 focus:ring-1 focus:ring-indigo-50 focus:outline-none resize-none"
+                    rows={3}
+                    placeholder="Tell people about yourself…"
+                  />
+                ) : (
+                  <p className="mt-2 text-sm text-slate-400 leading-relaxed">
+                    {user.bio || <span className="italic text-slate-300">No bio added yet.</span>}
+                  </p>
+                )}
+              </div>
+
+              {/* Style Tags */}
+              <div className="rounded-2xl border border-slate-100 bg-white p-5">
+                <h2 className="text-sm font-semibold text-slate-700">Style Preferences</h2>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {styleTags.map((tag) => (
+                    <span key={tag} className="rounded-full bg-slate-50 px-3.5 py-1.5 text-xs font-medium text-slate-500 transition hover:bg-indigo-50 hover:text-indigo-500">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Seller CTA */}
+              <div className="rounded-2xl bg-linear-to-r from-indigo-500 to-violet-500 p-6 text-white mb-6">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-indigo-200">Start selling</p>
+                <h3 className="mt-2 text-xl font-semibold">Become a Verified Seller</h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-indigo-100/80">
+                  List your items, reach buyers, and grow your fashion business.
+                </p>
+                <button 
+                  onClick={() => setShowSellerModal(true)} 
+                  className="mt-4 inline-flex items-center gap-2 rounded-full bg-white px-5 py-2 text-sm font-semibold text-indigo-600 transition hover:bg-indigo-50 cursor-pointer"
+                >
+                  Apply Now <FiChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Quick Links */}
+              <div className="rounded-2xl border border-slate-100 bg-white divide-y divide-slate-50">
+                {[
+                  { label: "Favorites", to: "/favorites", icon: FiHeart, desc: "Items you've saved" },
+                  { label: "Cart",      to: "/cart",      icon: FiShoppingBag, desc: "Ready for checkout" },
+                ].map((link) => (
+                  <Link
+                    key={link.label}
+                    to={link.to}
+                    className="flex items-center gap-3 px-5 py-4 transition hover:bg-slate-50"
+                  >
+                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-50 text-indigo-400">
+                      <link.icon className="w-4 h-4" />
+                    </span>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-slate-700">{link.label}</p>
+                      <p className="text-xs text-slate-400">{link.desc}</p>
+                    </div>
+                    <FiChevronRight className="w-4 h-4 text-slate-300" />
+                  </Link>
+                ))}
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-3 px-5 py-4 transition hover:bg-red-50 text-left"
+                >
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-red-50 text-red-300">
+                    <FiLogOut className="w-4 h-4" />
+                  </span>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-red-400">Log Out</p>
+                    <p className="text-xs text-red-300">Sign out of your account</p>
+                  </div>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ── ORDERS ── */}
+          {activeTab === "orders" && (
+            <div className="space-y-4 animate-[fadeIn_0.25s_ease]">
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-semibold text-slate-700">Order History</h2>
+                <span className="text-xs text-slate-400">{mockOrders.length} orders</span>
+              </div>
+
+              {mockOrders.map((order) => {
+                const badge = getStatusBadge(order.status);
+                return (
+                  <div key={order.id} className="rounded-2xl border border-slate-100 bg-white p-5 transition hover:shadow-sm">
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <p className="text-sm font-semibold text-slate-700">{order.id}</p>
+                        <p className="mt-1 text-xs text-slate-400">
+                          {new Date(order.date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+                        </p>
+                      </div>
+                      <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium ${badge.bg} ${badge.text}`}>
+                        {badge.icon}
+                        {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                      </span>
+                    </div>
+                    <div className="mt-3 flex items-center justify-between border-t border-slate-50 pt-3">
+                      <div>
+                        <p className="text-xs text-slate-400">{order.items} item{order.items > 1 ? "s" : ""}</p>
+                        <p className="text-xs text-slate-300 line-clamp-1 mt-0.5">{order.itemsPreview.join(", ")}</p>
+                      </div>
+                      <p className="text-sm font-bold text-slate-700">₨{order.total.toLocaleString()}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* ── LISTINGS ── */}
+          {activeTab === "listings" && (
+            <div className="space-y-4 animate-[fadeIn_0.25s_ease]">
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-semibold text-slate-700">My Listings</h2>
+                <Link to="/sell" className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-4 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-200">
+                  <FiPlus className="w-3.5 h-3.5" /> New
+                </Link>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                {mockListings.map((listing) => {
+                  const badge = getStatusBadge(listing.status);
+                  return (
+                    <article key={listing.id} className="group rounded-2xl border border-slate-100 bg-white overflow-hidden transition hover:shadow-md">
+                      <div className="relative aspect-4/3 bg-slate-50 overflow-hidden">
+                        <img
+                          src={listing.image}
+                          alt={listing.title}
+                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          onError={(e) => { e.currentTarget.src = "/src/assets/shirt-1.jpg"; }}
+                        />
+                        <span className={`absolute top-3 right-3 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium backdrop-blur-sm ${badge.bg} ${badge.text}`}>
+                          {badge.icon}
+                          {listing.status.charAt(0).toUpperCase() + listing.status.slice(1)}
+                        </span>
+                      </div>
+                      <div className="p-4">
+                        <h3 className="text-sm font-semibold text-slate-700 line-clamp-1">{listing.title}</h3>
+                        <p className="mt-1 text-base font-bold text-indigo-500">₨{listing.price.toLocaleString()}</p>
+                        <div className="mt-2.5 flex items-center gap-4 text-[11px] text-slate-400">
+                          <span className="inline-flex items-center gap-1"><FiHeart className="w-3 h-3" /> {listing.likes}</span>
+                          <span className="inline-flex items-center gap-1"><FiTrendingUp className="w-3 h-3" /> {listing.views}</span>
+                        </div>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* ── SETTINGS ── */}
+          {activeTab === "settings" && (
+            <div className="space-y-6 animate-[fadeIn_0.25s_ease]">
+
+              {/* Notifications */}
+              <div className="rounded-2xl border border-slate-100 bg-white">
+                <div className="px-5 py-4 border-b border-slate-50">
+                  <h2 className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+                    <FiBell className="w-4 h-4 text-indigo-400" /> Notifications
+                  </h2>
+                </div>
+                <div className="divide-y divide-slate-50">
+                  {[
+                    { label: "Order Updates",      desc: "Shipping & delivery alerts",     on: true },
+                    { label: "Promotions",          desc: "Sales and special offers",       on: true },
+                    { label: "New Arrivals",        desc: "Weekly fresh inventory",         on: false },
+                    { label: "Price Drops",         desc: "Saved items go on sale",         on: true },
+                    { label: "Seller Updates",      desc: "Listing performance",            on: true },
+                  ].map((item, i) => (
+                    <label key={i} className="flex items-center justify-between px-5 py-3.5 cursor-pointer transition hover:bg-slate-50/50">
+                      <div>
+                        <p className="text-sm font-medium text-slate-600">{item.label}</p>
+                        <p className="text-xs text-slate-400 mt-0.5">{item.desc}</p>
+                      </div>
+                      <input type="checkbox" defaultChecked={item.on} className="h-4 w-4 rounded border-slate-300 accent-indigo-500" />
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Security */}
+              <div className="rounded-2xl border border-slate-100 bg-white">
+                <div className="px-5 py-4 border-b border-slate-50">
+                  <h2 className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+                    <FiShield className="w-4 h-4 text-indigo-400" /> Security
+                  </h2>
+                </div>
+                <div className="divide-y divide-slate-50">
+                  {[
+                    { label: "Two-Step Verification", desc: "Extra security layer",        action: "Enable" },
+                    { label: "Change Password",       desc: "Last changed 3 months ago",   action: "Update" },
+                    { label: "Active Sessions",       desc: "2 devices logged in",         action: "Manage" },
+                  ].map((item, i) => (
+                    <div key={i} className="flex items-center justify-between px-5 py-3.5">
+                      <div>
+                        <p className="text-sm font-medium text-slate-600">{item.label}</p>
+                        <p className="text-xs text-slate-400 mt-0.5">{item.desc}</p>
+                      </div>
+                      <button className="rounded-full border border-slate-200 px-4 py-1.5 text-xs font-medium text-slate-500 transition hover:bg-slate-50">
+                        {item.action}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Appearance */}
+              <div className="rounded-2xl border border-slate-100 bg-white p-5">
+                <h2 className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+                  <FiSettings className="w-4 h-4 text-indigo-400" /> Appearance
+                </h2>
+                <div className="mt-4 flex gap-2">
+                  {["Light", "Dark", "System"].map((theme) => (
+                    <label key={theme} className="flex-1 rounded-xl border-2 border-slate-100 bg-slate-50/50 p-3 text-center cursor-pointer transition hover:border-indigo-200 has-checked:border-indigo-400 has-checked:bg-indigo-50">
+                      <input type="radio" name="theme" defaultChecked={theme === "System"} className="sr-only" />
+                      <p className="text-sm font-medium text-slate-600">{theme}</p>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Danger Zone */}
+              <div className="rounded-2xl border border-red-100 bg-red-50/30 p-5">
+                <h2 className="text-xs font-semibold text-red-400 uppercase tracking-widest">Danger Zone</h2>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <button className="rounded-full border border-red-200 bg-white px-4 py-2 text-xs font-medium text-red-400 transition hover:bg-red-50">
+                    Deactivate Account
+                  </button>
+                  <button className="rounded-full border border-red-200 bg-white px-4 py-2 text-xs font-medium text-red-400 transition hover:bg-red-50">
+                    Delete All Data
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </main>
+
+      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+      {/*  AVATAR MODAL                                            */}
+      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+      {showAvatarModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm p-4"
+          onClick={dismissAvatarModal}
+        >
+          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-base font-semibold text-slate-800">Update Photo</h3>
+            <p className="text-xs text-slate-400 mt-1">JPG, PNG, GIF or WEBP · max 5 MB</p>
+
+            {/* Preview */}
+            <div className="flex justify-center my-5">
+              {avatarPreview ? (
+                <img src={avatarPreview} alt="Preview" className="h-24 w-24 rounded-full object-cover ring-[3px] ring-indigo-100" />
+              ) : user.profile_picture ? (
+                <img src={`http://localhost:5000${user.profile_picture}`} alt={user.username} className="h-24 w-24 rounded-full object-cover ring-[3px] ring-indigo-100" />
+              ) : (
+                <div className="flex h-24 w-24 items-center justify-center rounded-full bg-linear-to-br from-indigo-400 to-violet-500 text-2xl font-bold text-white">
+                  {initials}
+                </div>
+              )}
+            </div>
+
+            {/* File picker */}
+            <input type="file" accept="image/*" className="sr-only" id="avatar-upload" onChange={handleAvatarChange} />
+            <label
+              htmlFor="avatar-upload"
+              className="flex flex-col items-center gap-1.5 w-full rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 p-4 text-center cursor-pointer transition hover:border-indigo-300 hover:bg-indigo-50/30"
+            >
+              <FiCamera className="w-5 h-5 text-slate-300" />
+              <span className="text-xs font-medium text-slate-500">{avatarFile ? avatarFile.name : "Choose a photo"}</span>
+            </label>
+
+            {avatarError && (
+              <p className="mt-3 text-xs text-red-500 flex items-center gap-1">
+                <FiXCircle className="w-3.5 h-3.5" /> {avatarError}
+              </p>
+            )}
+
+            <div className="mt-5 flex gap-3">
+              <button
+                onClick={dismissAvatarModal}
+                className="flex-1 rounded-full border border-slate-200 px-4 py-2.5 text-xs font-medium text-slate-500 transition hover:bg-slate-50"
+                disabled={avatarUploading}
+              >
                 Cancel
               </button>
-              <button className="flex-1 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700">
-                Save Changes
+              <button
+                onClick={handleAvatarUpload}
+                disabled={!avatarFile || avatarUploading}
+                className="flex-1 rounded-full bg-indigo-500 px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-indigo-600 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {avatarUploading ? (
+                  <><span className="h-3.5 w-3.5 rounded-full border-2 border-white border-t-transparent animate-spin" /> Uploading…</>
+                ) : (
+                  "Save"
+                )}
               </button>
             </div>
           </div>
         </div>
       )}
+
+      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+      {/*  SELLER VERIFICATION MODAL                               */}
+      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+      <SellerVerificationModal isOpen={showSellerModal} onClose={() => setShowSellerModal(false)} />
 
       <Footer />
     </div>
