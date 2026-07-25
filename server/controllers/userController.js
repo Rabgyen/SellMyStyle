@@ -125,26 +125,63 @@ exports.getUserProfile = (req, res) => {
             }
 
             const user = result[0];
-            res.json({
-                success: true,
-                user: {
-                    id: user.user_id,
-                    username: user.username,
-                    email: user.email,
-                    phone: user.phone,
-                    nationality: user.nationality,
-                    country: user.country,
-                    city: user.city,
-                    postal_code: user.postal_code,
-                    street_address: user.street_address,
-                    bio: user.bio,
-                    profile_picture: user.profile_picture,
-                    followers_count: user.followers_count,
-                    following_count: user.following_count,
-                    memberSince: user.created_at ? new Date(user.created_at).getFullYear().toString() : "2024",
-                    created_at: user.created_at
+
+            // Check if user has a verified seller profile
+            db.query(
+                `SELECT seller_id, store_name, store_description, store_logo, business_type, verification_status, submitted_at
+                 FROM seller_profiles WHERE user_id = ? AND verification_status IN ('Verified', 'Approved')`,
+                [userId],
+                (err2, sellerResults) => {
+                    if (err2) {
+                        console.error("Error fetching seller profile:", err2);
+                        // Return user data even if seller profile fetch fails
+                        return res.json({
+                            success: true,
+                            user: {
+                                id: user.user_id,
+                                username: user.username,
+                                email: user.email,
+                                phone: user.phone,
+                                nationality: user.nationality,
+                                country: user.country,
+                                city: user.city,
+                                postal_code: user.postal_code,
+                                street_address: user.street_address,
+                                bio: user.bio,
+                                profile_picture: user.profile_picture,
+                                followers_count: user.followers_count,
+                                following_count: user.following_count,
+                                memberSince: user.created_at ? new Date(user.created_at).getFullYear().toString() : "2024",
+                                created_at: user.created_at
+                            },
+                            sellerProfile: null
+                        });
+                    }
+
+                    const sellerProfile = sellerResults.length > 0 ? sellerResults[0] : null;
+                    res.json({
+                        success: true,
+                        user: {
+                            id: user.user_id,
+                            username: user.username,
+                            email: user.email,
+                            phone: user.phone,
+                            nationality: user.nationality,
+                            country: user.country,
+                            city: user.city,
+                            postal_code: user.postal_code,
+                            street_address: user.street_address,
+                            bio: user.bio,
+                            profile_picture: user.profile_picture,
+                            followers_count: user.followers_count,
+                            following_count: user.following_count,
+                            memberSince: user.created_at ? new Date(user.created_at).getFullYear().toString() : "2024",
+                            created_at: user.created_at
+                        },
+                        sellerProfile
+                    });
                 }
-            });
+            );
         }
     );
 };

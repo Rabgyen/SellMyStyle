@@ -144,6 +144,77 @@ const registerSeller = async (req, res) => {
     }
 };
 
+const getSellerProducts = async (req, res) => {
+    try {
+        const { sellerId } = req.params;
+
+        const products = await query(`
+            SELECT p.*, c.category_name as category,
+                   (SELECT image_path FROM product_images WHERE product_id = p.product_id ORDER BY display_order LIMIT 1) as primary_image
+            FROM products p
+            LEFT JOIN categories c ON p.category_id = c.category_id
+            WHERE p.seller_id = ?
+            ORDER BY p.created_at DESC
+        `, [sellerId]);
+
+        res.json({ success: true, products });
+    } catch (error) {
+        console.error("Error in getSellerProducts:", error);
+        res.status(500).json({ success: false, message: "Internal Server Error", error: error.message });
+    }
+};
+
+const getSellerCollections = async (req, res) => {
+    try {
+        const { sellerId } = req.params;
+
+        // Get products grouped by category as collections
+        const collections = await query(`
+            SELECT c.category_id, c.category_name as name, COUNT(p.product_id) as item_count,
+                   (SELECT image_path FROM product_images pi
+                    JOIN products p2 ON pi.product_id = p2.product_id
+                    WHERE p2.category_id = c.category_id AND p2.seller_id = ?
+                    ORDER BY pi.display_order LIMIT 1) as cover_image
+            FROM categories c
+            LEFT JOIN products p ON p.category_id = c.category_id AND p.seller_id = ?
+            WHERE c.category_id IN (SELECT DISTINCT category_id FROM products WHERE seller_id = ?)
+            GROUP BY c.category_id, c.category_name
+            ORDER BY item_count DESC
+        `, [sellerId, sellerId, sellerId]);
+
+        res.json({ success: true, collections });
+    } catch (error) {
+        console.error("Error in getSellerCollections:", error);
+        res.status(500).json({ success: false, message: "Internal Server Error", error: error.message });
+    }
+};
+
+const getSellerProfile = async (req, res) => {
+    try {
+        const { sellerId } = req.params;
+
+        // Get seller profile with user info
+        const profile = await query(`
+            SELECT sp.*, u.username, u.email, u.profile_picture
+            FROM seller_profiles sp
+            JOIN users u ON sp.user_id = u.user_id
+            WHERE sp.seller_id = ?
+        `, [sellerId]);
+
+        if (profile.length === 0) {
+            return res.status(404).json({ success: false, message: "Seller profile not found" });
+        }
+
+        res.json({ success: true, profile: profile[0] });
+    } catch (error) {
+        console.error("Error in getSellerProfile:", error);
+        res.status(500).json({ success: false, message: "Internal Server Error", error: error.message });
+    }
+};
+
 module.exports = {
-    registerSeller
+    registerSeller,
+    getSellerProducts,
+    getSellerCollections,
+    getSellerProfile
 };
