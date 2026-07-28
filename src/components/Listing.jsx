@@ -2,26 +2,10 @@ import React, { useContext, useState, useEffect } from "react";
 import ListingCard from "./ListingCard";
 import { useCategoryContext } from "../context/CategoryContext";
 import { clothes } from "../data/clothingData";
-import axios from "axios";
 
 const Listing = ({clothing}) => {
   
-  const { category, setCategory, searchTerm } = useCategoryContext();
-  const [categories, setCategories] = useState([]);
-
-  useEffect(() => {
-    const fetchCategory = async() => {
-      try{
-        const categoryResponse = await axios.get(
-        "http://localhost:5000/product/product_categories"
-      )
-       setCategories(categoryResponse.data);
-      }catch(err){
-        console.log(err);
-      }
-    }
-    fetchCategory();
-   },[])
+  const { category, setCategory, searchTerm, categories, setCategories } = useCategoryContext();
 
   return (
     <div className="mx-auto max-w-7xl p-4 sm:px-6 lg:px-8 flex flex-col gap-6">
