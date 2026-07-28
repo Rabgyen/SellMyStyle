@@ -1,11 +1,27 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import ListingCard from "./ListingCard";
 import { useCategoryContext } from "../context/CategoryContext";
 import { clothes } from "../data/clothingData";
+import axios from "axios";
 
 const Listing = ({clothing}) => {
   
   const { category, setCategory, searchTerm } = useCategoryContext();
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    const fetchCategory = async() => {
+      try{
+        const categoryResponse = await axios.get(
+        "http://localhost:5000/product/product_categories"
+      )
+       setCategories(categoryResponse.data);
+      }catch(err){
+        console.log(err);
+      }
+    }
+    fetchCategory();
+   },[])
 
   return (
     <div className="mx-auto max-w-7xl p-4 sm:px-6 lg:px-8 flex flex-col gap-6">
@@ -17,14 +33,9 @@ const Listing = ({clothing}) => {
           onChange={(e) => setCategory(e.target.value)}
         >
           <option value="all">All</option>
-          <option value="Shirts">Shirts</option>
-          <option value="Pants">Pants</option>
-          <option value="Shoes">Shoes</option>
-          <option value="Shades">Shades</option>
-          <option value="Tie">Tie</option>
-          <option value="Caps">Caps</option>
-          <option value="Socks">Socks</option>
-          <option value="Accessories">Accessories</option>
+          {categories.map((item) => (
+            <option key={item.category_id} value={item.category_name}>{item.category_name}</option>
+          ))}
         </select>
         <div className="mt-6 inline-flex items-center gap-2 rounded text-gray-400 border border-slate-200 bg-white px-6 py-2 text-sm font-medium shadow-sm transition hover:bg-slate-50">
           Sort
