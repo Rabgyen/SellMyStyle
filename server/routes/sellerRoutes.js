@@ -9,7 +9,6 @@ router.post(
     uploadFields,
     registerSeller
 );
-
 router.get("/:sellerId/products", getSellerProducts);
 router.get("/:sellerId/collections", getSellerCollections);
 router.get("/profile/:sellerId", getSellerProfile);

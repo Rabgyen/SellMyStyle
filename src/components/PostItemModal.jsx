@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { FiX, FiCheck, FiAlertCircle, FiSearch, FiImage, FiCheckCircle } from "react-icons/fi";
+import { useCategoryContext } from "../context/CategoryContext";
 
 const PostItemModal = ({ isOpen, onClose, sellerId, onSuccess }) => {
   const [step, setStep] = useState(1);
@@ -26,18 +27,10 @@ const PostItemModal = ({ isOpen, onClose, sellerId, onSuccess }) => {
     images: [],
   });
 
-  if (!isOpen) return null;
+  const { categories, setCategories } = useCategoryContext();
+  console.log(categories)
 
-  const categories = [
-    { value: "tops", label: "Tops", subcategories: ["T-Shirts", "Shirts", "Blouses", "Tank Tops", "Crop Tops", "Bodysuits", "Sweaters", "Cardigans", "Hoodies", "Sweatshirts"] },
-    { value: "bottoms", label: "Bottoms", subcategories: ["Jeans", "Trousers", "Shorts", "Skirts", "Leggings", "Joggers", "Cargo Pants", "Chinos"] },
-    { value: "dresses", label: "Dresses", subcategories: ["Mini", "Midi", "Maxi", "Mini", "Bodycon", "A-Line", "Wrap", "Shift", "Slip", "Sundress"] },
-    { value: "outerwear", label: "Outerwear", subcategories: ["Jackets", "Coats", "Blazers", "Vests", "Parkas", "Trench Coats", "Puffer Jackets", "Leather Jackets", "Denim Jackets"] },
-    { value: "activewear", label: "Activewear", subcategories: ["Sports Bras", "Leggings", "Shorts", "Tank Tops", "Jackets", "Joggers", "Yoga Pants", "Running Shorts"] },
-    { value: "swimwear", label: "Swimwear", subcategories: ["One-Piece", "Bikinis", "Tankinis", "Swim Trunks", "Board Shorts", "Rash Guards"] },
-    { value: "shoes", label: "Shoes", subcategories: ["Sneakers", "Boots", "Sandals", "Heels", "Flats", "Loafers", "Oxfords", "Slides"] },
-    { value: "accessories", label: "Accessories", subcategories: ["Bags", "Belts", "Hats", "Scarves", "Jewelry", "Sunglasses", "Wallets", "Gloves"] },
-  ];
+  if (!isOpen) return null;
 
   const sizes = ["XS", "S", "M", "L", "XL", "XXL", "XXXL", "28", "30", "32", "34", "36", "38", "40", "42", "44", "46", "48", "50", "One Size"];
   const conditions = [
@@ -47,13 +40,26 @@ const PostItemModal = ({ isOpen, onClose, sellerId, onSuccess }) => {
     { value: "fair", label: "Fair" },
   ];
   const fits = ["Slim", "Regular", "Relaxed", "Oversized", "Skinny", "Straight", "Bootcut", "Tapered"];
+  const selectedCategoryName = formData.category_id?.trim().toLowerCase();
+  const isShadesOrAccessories = ["shades", "accessories"].includes(selectedCategoryName);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     if (type === "checkbox") {
       setFormData(prev => ({ ...prev, [name]: checked }));
     } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
+      setFormData(prev => {
+        const nextFormData = { ...prev, [name]: value };
+
+        if (name === "category_id" && ["shades", "accessories"].includes(value.trim().toLowerCase())) {
+          nextFormData.fit = "";
+          nextFormData.season = "";
+          nextFormData.length = "";
+          nextFormData.width = "";
+        }
+
+        return nextFormData;
+      });
     }
   };
 
@@ -123,7 +129,7 @@ const PostItemModal = ({ isOpen, onClose, sellerId, onSuccess }) => {
       images.forEach((img, i) => fd.append(`images`, img));
 
       const response = await axios.post(
-        `http://localhost:5000/api/seller/${sellerId}/products`,
+        `http://localhost:5000/product/${sellerId}/products`,
         fd,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
@@ -153,7 +159,7 @@ const PostItemModal = ({ isOpen, onClose, sellerId, onSuccess }) => {
         {/* Header */}
         <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-white">
           <h3 className="text-lg font-semibold text-slate-800">Post New Clothing Item</h3>
-          <button onClick={onClose} className="p-2 rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-600">
+          <button type="button" onClick={onClose} className="p-2 rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-600">
             <FiX className="w-5 h-5" />
           </button>
         </div>
@@ -184,7 +190,8 @@ const PostItemModal = ({ isOpen, onClose, sellerId, onSuccess }) => {
         </div>
 
         {/* Form Content */}
-        <div className="p-6 overflow-y-auto max-h-[65vh]">
+        <form onSubmit={(e) => e.preventDefault()}>
+          <div className="p-6 overflow-y-auto max-h-[65vh]">
           {error && (
             <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-100 text-red-600 text-sm flex items-center gap-2">
               <FiAlertCircle className="w-4 h-4 shrink-0" />
@@ -220,7 +227,7 @@ const PostItemModal = ({ isOpen, onClose, sellerId, onSuccess }) => {
                   >
                     <option value="">Select category</option>
                     {categories.map(c => (
-                      <option key={c.value} value={c.value}>{c.label}</option>
+                      <option key={c.category_id} value={c.category_name}>{c.category_name}</option>
                     ))}
                   </select>
                 </div>
@@ -276,20 +283,22 @@ const PostItemModal = ({ isOpen, onClose, sellerId, onSuccess }) => {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-xs font-medium text-slate-600 mb-1">Fit</label>
-                  <select
-                    name="fit"
-                    value={formData.fit}
-                    onChange={handleChange}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm focus:border-indigo-400 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
-                  >
-                    <option value="">Select fit</option>
-                    {fits.map(f => (
-                      <option key={f} value={f}>{f}</option>
-                    ))}
-                  </select>
-                </div>
+                {!isShadesOrAccessories && (
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 mb-1">Fit</label>
+                    <select
+                      name="fit"
+                      value={formData.fit}
+                      onChange={handleChange}
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm focus:border-indigo-400 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                    >
+                      <option value="">Select fit</option>
+                      {fits.map(f => (
+                        <option key={f} value={f}>{f}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
               </div>
 
               <div>
@@ -392,6 +401,7 @@ const PostItemModal = ({ isOpen, onClose, sellerId, onSuccess }) => {
                         className="h-32 w-32 rounded-lg object-cover border border-slate-200"
                       />
                       <button
+                        type="button"
                         onClick={() => removeImage(index)}
                         className="absolute top-2 right-2 rounded-full bg-red-500 text-white px-2 py-1 text-xs hover:bg-red-600"
                       >
@@ -409,59 +419,63 @@ const PostItemModal = ({ isOpen, onClose, sellerId, onSuccess }) => {
             <div className="space-y-6 animate-[fadeIn_0.2s_ease]">
               <h4 className="text-sm font-semibold text-slate-700">Additional Details</h4>
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="block text-xs font-medium text-slate-600 mb-1">Weight (kg)</label>
+              <div className={`grid gap-4 ${isShadesOrAccessories ? "sm:grid-cols-1" : "sm:grid-cols-2"}`}>
+                <div className={isShadesOrAccessories ? "sm:col-span-2" : ""}>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Material</label>
                   <input
-                    name="weight"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={formData.weight}
+                    name="material"
+                    value={formData.material || ""}
                     onChange={handleChange}
-                    placeholder="0.5"
+                    placeholder="e.g., Cotton, Denim, Silk"
                     className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm focus:border-indigo-400 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
                   />
                 </div>
-                <div>
-                  <label className="block text-xs font-medium text-slate-600 mb-1">Length (cm)</label>
-                  <input
-                    name="length"
-                    type="number"
-                    min="0"
-                    step="0.5"
-                    value={formData.length}
-                    onChange={handleChange}
-                    placeholder="30"
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm focus:border-indigo-400 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-slate-600 mb-1">Width (cm)</label>
-                  <input
-                    name="width"
-                    type="number"
-                    min="0"
-                    step="0.5"
-                    value={formData.width}
-                    onChange={handleChange}
-                    placeholder="20"
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm focus:border-indigo-400 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-slate-600 mb-1">Height (cm)</label>
-                  <input
-                    name="height"
-                    type="number"
-                    min="0"
-                    step="0.5"
-                    value={formData.height}
-                    onChange={handleChange}
-                    placeholder="5"
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm focus:border-indigo-400 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
-                  />
-                </div>
+                {!isShadesOrAccessories && (
+                  <>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-600 mb-1">Season</label>
+                      <select
+                        name="season"
+                        value={formData.season || ""}
+                        onChange={handleChange}
+                        className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm focus:border-indigo-400 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                      >
+                        <option value="">Select season</option>
+                        <option value="Spring">Spring</option>
+                        <option value="Summer">Summer</option>
+                        <option value="Autumn">Autumn</option>
+                        <option value="Winter">Winter</option>
+                        <option value="All Season">All Season</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-600 mb-1">Length (cm)</label>
+                      <input
+                        name="length"
+                        type="number"
+                        min="0"
+                        step="0.5"
+                        value={formData.length || ""}
+                        onChange={handleChange}
+                        placeholder="30"
+                        className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm focus:border-indigo-400 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-600 mb-1">Width (cm)</label>
+                      <input
+                        name="width"
+                        type="number"
+                        min="0"
+                        step="0.5"
+                        value={formData.width || ""}
+                        onChange={handleChange}
+                        placeholder="20"
+                        className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm focus:border-indigo-400 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                      />
+                    </div>
+                  </>
+                )}
               </div>
 
               <div className="pt-4 border-t border-slate-100">
@@ -482,6 +496,7 @@ const PostItemModal = ({ isOpen, onClose, sellerId, onSuccess }) => {
         <div className="sticky bottom-0 z-10 flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-100 bg-white">
           {step > 1 && (
             <button
+              type="button"
               onClick={handleBack}
               className="rounded-full border border-slate-200 px-5 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
               disabled={loading}
@@ -491,6 +506,7 @@ const PostItemModal = ({ isOpen, onClose, sellerId, onSuccess }) => {
           )}
           {step < 4 ? (
             <button
+              type="button"
               onClick={handleNext}
               className="rounded-full bg-indigo-500 px-5 py-2 text-sm font-semibold text-white transition hover:bg-indigo-600"
               disabled={loading}
@@ -499,6 +515,7 @@ const PostItemModal = ({ isOpen, onClose, sellerId, onSuccess }) => {
             </button>
           ) : (
             <button
+              type="button"
               onClick={handleSubmit}
               className="rounded-full bg-indigo-500 px-5 py-2 text-sm font-semibold text-white transition hover:bg-indigo-600"
               disabled={loading}
@@ -514,6 +531,7 @@ const PostItemModal = ({ isOpen, onClose, sellerId, onSuccess }) => {
             </button>
           )}
         </div>
+        </form>
       </div>
     </div>
   );

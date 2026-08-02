@@ -20,9 +20,11 @@ app.get("/", (req, res) => {
 
 const userRouter = require("./routes/userRoutes");
 const sellerRouter = require("./routes/sellerRoutes");
+const productRoutes = require("./routes/productRoutes")
 
 app.use(userRouter);
 app.use("/api/seller", sellerRouter);
+app.use("/product/", productRoutes)
 
 app.listen(5000, () => {
     console.log("Server is running!");

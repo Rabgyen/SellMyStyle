@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import axios from "axios";
 import { clothes } from "../data/clothingData";
 import { FaCartShopping } from "react-icons/fa6";
 import { LiaHeartSolid } from "react-icons/lia";
@@ -15,62 +16,144 @@ import ListingCard from "../components/ListingCard";
 import Footer from "../components/Footer";
 import { getClothingImageSrc, DEFAULT_CLOTHING_IMAGE } from "../utils/clothingImage";
 
+const normalizeDbProduct = (product) => {
+  if (!product) return null;
+
+  return {
+    id: product.product_id,
+    title: product.product_name,
+    price: product.price,
+    rating: product.rating ?? 4.5,
+    description: product.description || "",
+    condition: product.product_condition || "",
+    category: product.category_name || "",
+    image: product.image_path || "",
+    brand: product.brand || "",
+    size: product.size || "",
+    color: product.color || "",
+    material: product.material || "",
+    season: product.season || "",
+    length: product.length || "",
+    width: product.width || "",
+    fit: product.fit || "",
+    original_price: product.original_price,
+    stock_quantity: product.stock_quantity,
+  };
+};
+
 const ClothingDetails = () => {
   const { id } = useParams();
   const numeirId = Number(id);
   const clothing = clothes;
 
-  const { isFavorite, addToFavorite, removeFromFavorite } =
-    useFavoriteContext();
-
+  const { isFavorite, addToFavorite, removeFromFavorite } = useFavoriteContext();
   const { inCart, addToCart, removeFromCart } = useCartContext();
 
-  const cartItem = inCart(numeirId);
+  const [dbProduct, setDbProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [rating, setRating] = useState(0);
+  const [randomClothes, setRandomClothes] = useState([]);
 
-  const favoriteItem = isFavorite(numeirId);
+  const staticItem = clothing.find((item) => item.id === numeirId);
 
-  const items = clothing.find((item) => item.id === numeirId);
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchProduct = async () => {
+      setLoading(true);
+      try {
+        const response = await axios.get(`http://localhost:5000/product/${id}`);
+        if (isMounted && response.data.success) {
+          setDbProduct(normalizeDbProduct(response.data.data));
+        }
+      } catch (error) {
+        if (isMounted) {
+          setDbProduct(null);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchProduct();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [id]);
+
+  const items = dbProduct || staticItem;
+  const cartItem = inCart(items?.id ?? numeirId);
+  const favoriteItem = isFavorite(items?.id ?? numeirId);
 
   const handleFavorite = () => {
+    if (!items) return;
     if (favoriteItem) {
-      removeFromFavorite(numeirId);
+      removeFromFavorite(items.id);
     } else {
       addToFavorite(items);
     }
   };
 
   const handleCart = () => {
+    if (!items) return;
     if (cartItem) {
-      removeFromCart(numeirId);
+      removeFromCart(items.id);
     } else {
       addToCart(items);
     }
-  };
-
-  const [rating, setRating] = useState(0);
-
-  const handleRating = (value) => {
-    setRating(value);
   };
 
   const getRandomItems = (arr, count) => {
     return [...arr].sort(() => Math.random() - 0.5).slice(0, count);
   };
 
-  const [randomClothes, setRandomClothes] = useState([]);
-
   useEffect(() => {
     setRandomClothes(getRandomItems(clothing, 4));
   }, []);
 
+  const imageSrc = useMemo(() => {
+    if (dbProduct?.image) {
+      return `http://localhost:5000${dbProduct.image}`;
+    }
+
+    return getClothingImageSrc(items?.image);
+  }, [dbProduct, items?.image]);
+
+  if (loading && !items) {
+    return (
+      <div className="min-h-screen w-full bg-white">
+        <NavBar />
+        <div className="mx-auto flex max-w-7xl items-center justify-center px-4 py-24 text-slate-400">
+          Loading product…
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!items) {
+    return (
+      <div className="min-h-screen w-full bg-white">
+        <NavBar />
+        <div className="mx-auto flex max-w-7xl items-center justify-center px-4 py-24 text-slate-400">
+          Product not found.
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
-    <div className="h-screen w-full">
+    <div className="min-h-screen w-full bg-white">
       <NavBar />
       <div className="flex flex-wrap rounded-2xl mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 gap-4 py-10">
         <div className="flex-1 rounded-2xl w-full h-128 overflow-hidden bg-white shadow-2xl sm:h-152 lg:h-176 min-w-80">
           <img
-            src={getClothingImageSrc(items?.image)}
-            alt="clothe"
+            src={imageSrc}
+            alt={items.title}
             onError={(event) => {
               event.currentTarget.src = DEFAULT_CLOTHING_IMAGE;
             }}
@@ -109,6 +192,14 @@ const ClothingDetails = () => {
             <p className="text-sm text-gray-500">
               {items.description}
             </p>
+            <div className="grid grid-cols-2 gap-2 text-xs text-gray-500">
+              {items.brand ? <span>Brand: {items.brand}</span> : null}
+              {items.size ? <span>Size: {items.size}</span> : null}
+              {items.color ? <span>Color: {items.color}</span> : null}
+              {items.material ? <span>Material: {items.material}</span> : null}
+              {items.season ? <span>Season: {items.season}</span> : null}
+              {items.fit ? <span>Fit: {items.fit}</span> : null}
+            </div>
           </div>
           <div className="flex flex-col gap-2">
             <p className="text-sm md:text-lg">Shipping</p>
@@ -145,7 +236,7 @@ const ClothingDetails = () => {
             <div className="flex gap-2">
               <span className="flex items-end">
                 <p className="text-2xl md:text-4xl font-semibold">
-                  {items.rating}
+                  {items.rating ?? 4.5}
                 </p>
                 <p className="text-sm text-gray-400">/5</p>
               </span>
@@ -153,7 +244,7 @@ const ClothingDetails = () => {
                 {[1, 2, 3, 4, 5].map((star) => (
                   <span
                     key={star}
-                    onClick={() => handleRating(star)}
+                    onClick={() => setRating(star)}
                     className={`cursor-pointer flex text-2xl ${star <= rating ? "text-yellow-400" : "text-gray-300"}`}
                   >
                     <IoIosStar />
