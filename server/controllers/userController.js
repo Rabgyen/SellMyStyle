@@ -159,27 +159,43 @@ exports.getUserProfile = (req, res) => {
                     }
 
                     const sellerProfile = sellerResults.length > 0 ? sellerResults[0] : null;
-                    res.json({
-                        success: true,
-                        user: {
-                            id: user.user_id,
-                            username: user.username,
-                            email: user.email,
-                            phone: user.phone,
-                            nationality: user.nationality,
-                            country: user.country,
-                            city: user.city,
-                            postal_code: user.postal_code,
-                            street_address: user.street_address,
-                            bio: user.bio,
-                            profile_picture: user.profile_picture,
-                            followers_count: user.followers_count,
-                            following_count: user.following_count,
-                            memberSince: user.created_at ? new Date(user.created_at).getFullYear().toString() : "2024",
-                            created_at: user.created_at
-                        },
-                        sellerProfile
-                    });
+                    
+                    const sendResponse = (profileWithLinks = null) => {
+                        res.json({
+                            success: true,
+                            user: {
+                                id: user.user_id,
+                                username: user.username,
+                                email: user.email,
+                                phone: user.phone,
+                                nationality: user.nationality,
+                                country: user.country,
+                                city: user.city,
+                                postal_code: user.postal_code,
+                                street_address: user.street_address,
+                                bio: user.bio,
+                                profile_picture: user.profile_picture,
+                                followers_count: user.followers_count,
+                                following_count: user.following_count,
+                                memberSince: user.created_at ? new Date(user.created_at).getFullYear().toString() : "2024",
+                                created_at: user.created_at
+                            },
+                            sellerProfile: profileWithLinks
+                        });
+                    };
+
+                    if (sellerProfile) {
+                        db.query("SELECT platform, url FROM seller_social_links WHERE seller_id = ?", [sellerProfile.seller_id], (err3, socialLinks) => {
+                            if (!err3) {
+                                sellerProfile.socialLinks = socialLinks;
+                            } else {
+                                sellerProfile.socialLinks = [];
+                            }
+                            sendResponse(sellerProfile);
+                        });
+                    } else {
+                        sendResponse(null);
+                    }
                 }
             );
         }

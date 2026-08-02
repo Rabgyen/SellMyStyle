@@ -44,6 +44,7 @@ import SellerVerificationModal from "../components/SellerVerificationModal";
 import PostItemModal from "../components/PostItemModal";
 import EditProductModal from "../components/EditProductModal";
 import CreateCollectionModal from "../components/CreateCollectionModal";
+import PublicProfile from "../components/PublicProfile";
 
 /* ─── helpers ─── */
 const getInitials = (name) =>
@@ -441,6 +442,22 @@ const Profile = () => {
   }
 
   /* ────────────────────────── RENDER ────────────────────────── */
+  if (!isOwnProfile) {
+    return (
+      <div className="min-h-screen bg-white text-slate-800">
+        <NavBar />
+        <main className="mx-auto max-w-4xl px-4 pt-10 pb-16 sm:px-6">
+          <PublicProfile 
+            user={user} 
+            sellerProfile={sellerProfile} 
+            sellerProducts={sellerProducts} 
+            sellerCollections={sellerCollections} 
+          />
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-white text-slate-800">
       <NavBar />

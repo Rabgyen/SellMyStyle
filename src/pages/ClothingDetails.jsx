@@ -111,7 +111,27 @@ const ClothingDetails = () => {
   };
 
   useEffect(() => {
-    setRandomClothes(getRandomItems(clothing, 4));
+    let isMounted = true;
+    const fetchRandomProducts = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/product/products');
+        if (isMounted && response.data && response.data.length > 0) {
+          const randomized = [...response.data].sort(() => Math.random() - 0.5).slice(0, 4);
+          setRandomClothes(randomized);
+        } else if (isMounted) {
+          setRandomClothes(getRandomItems(clothing, 4));
+        }
+      } catch (err) {
+        console.error("Error fetching random products:", err);
+        if (isMounted) setRandomClothes(getRandomItems(clothing, 4));
+      }
+    };
+    
+    fetchRandomProducts();
+    
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const imageSrc = useMemo(() => {
@@ -193,12 +213,12 @@ const ClothingDetails = () => {
               {items.description}
             </p>
             <div className="grid grid-cols-2 gap-2 text-xs text-gray-500">
-              {items.brand ? <span>Brand: {items.brand}</span> : null}
-              {items.size ? <span>Size: {items.size}</span> : null}
-              {items.color ? <span>Color: {items.color}</span> : null}
-              {items.material ? <span>Material: {items.material}</span> : null}
-              {items.season ? <span>Season: {items.season}</span> : null}
-              {items.fit ? <span>Fit: {items.fit}</span> : null}
+              {items.brand ? <span className="flex"><p className="font-bold">Brand</p>: {items.brand}</span> : null}
+              {items.size ? <span className="flex"><p className="font-bold">Size</p>: {items.size}</span> : null}
+              {items.color ? <span className="flex"><p className="font-bold">Color</p>: {items.color}</span> : null}
+              {items.material ? <span className="flex"><p className="font-bold">Material</p>: {items.material}</span> : null}
+              {items.season ? <span className="flex"><p className="font-bold">Season</p>: {items.season}</span> : null}
+              {items.fit ? <span className="flex"><p className="font-bold">Fit</p>: {items.fit}</span> : null}
             </div>
           </div>
           <div className="flex flex-col gap-2">
@@ -259,7 +279,7 @@ const ClothingDetails = () => {
         <h1 className="text-2xl md:text-4xl">You might also like</h1>
         <div className="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-6 w-full mt-10 ">
           {randomClothes.map((item) => (
-            <ListingCard key={item.id} clothes={item} />
+            <ListingCard key={item.product_id || item.id} products={item} />
           ))}
         </div>
         <Link to="/">

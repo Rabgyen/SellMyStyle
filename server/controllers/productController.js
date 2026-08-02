@@ -140,7 +140,7 @@ exports.addProduct = async (req, res) => {
 exports.getProductById = async (req, res) => {
     try {
         const productId = req.params.id;
-        
+
         // Validate that productId is a number
         if (isNaN(productId)) {
             return res.status(400).json({
@@ -148,7 +148,7 @@ exports.getProductById = async (req, res) => {
                 message: "Invalid product ID"
             });
         }
-        
+
         const sql = `
             SELECT 
                 p.*,
@@ -159,18 +159,18 @@ exports.getProductById = async (req, res) => {
             LEFT JOIN product_images pi ON p.product_id = pi.product_id AND pi.display_order = 1
             WHERE p.product_id = ?
         `;
-        
+
         const result = await query(sql, [productId]);
-        
+
         if (result.length === 0) {
             return res.status(404).json({
                 success: false,
                 message: "Product not found"
             });
         }
-        
+
         const product = result[0];
-        
+
         res.status(200).json({
             success: true,
             data: product
@@ -311,3 +311,24 @@ exports.updateProduct = async (req, res) => {
         });
     }
 };
+
+
+exports.getProduct = (req, res) => {
+    const sql = 'SELECT p.product_id, p.seller_id,p.category_id,c.category_name,p.product_name,p.description,p.price,p.original_price,p.stock_quantity,p.brand,p.size,p.product_condition,p.color,p.material,p.season,p.length,p.width,p.fit,pi.image_id,pi.image_path,pi.display_order,p.created_at,p.updated_at FROM products AS p LEFT JOIN categories AS c ON p.category_id = c.category_id LEFT JOIN product_images AS pi ON p.product_id = pi.product_id AND pi.display_order = 1 ORDER BY p.product_id';
+
+    db.query(sql, (err, result) => {
+        if (err) {
+            return res.status(500).json({
+                message: "Database Error",
+                error: err
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            products: result
+        });
+    });
+
+
+}

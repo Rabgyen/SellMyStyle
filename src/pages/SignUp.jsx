@@ -27,6 +27,7 @@ const SignUp = () => {
     event.preventDefault();
 
     if (formData.password !== formData.confirmPassword) {
+      alert("Passwords do not match!");
       return;
     }
 
@@ -40,14 +41,13 @@ const SignUp = () => {
       console.log(response.data);
 
       if (response.data.success && response.data.user) {
-        localStorage.setItem("isLoggedIn", "true");
-        localStorage.setItem("user_id", response.data.user.id);
-        localStorage.setItem("userEmail", response.data.user.email);
-        localStorage.setItem("userName", response.data.user.username);
+        navigate("/signin");
+      } else {
+        alert(response.data.message || "Registration failed");
       }
-       navigate("/");
     } catch (error) {
       console.error(error);
+      alert(error.response?.data?.sqlMessage || "An error occurred during sign up. (User might already exist)");
     }
   };
 
@@ -121,7 +121,8 @@ const SignUp = () => {
               placeholder="E.g. johndoe@email.com"
               value={formData.email}
               onChange={handleChange}
-              className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-[#4e46ff]"required
+              className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-[#4e46ff]"
+              required
             />
 
             <label

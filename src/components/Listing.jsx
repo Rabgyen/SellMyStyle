@@ -1,11 +1,63 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import ListingCard from "./ListingCard";
 import { useCategoryContext } from "../context/CategoryContext";
-import { clothes } from "../data/clothingData";
 
-const Listing = ({clothing}) => {
-  
-  const { category, setCategory, searchTerm, categories, setCategories } = useCategoryContext();
+const Listing = ({ clothing = [] }) => {
+  const { category, setCategory, searchTerm, categories } = useCategoryContext();
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchProducts = async () => {
+      setLoading(true);
+      setError("");
+
+      try {
+        const response = await axios.get("http://localhost:5000/product/products");
+        const fetchedProducts = response.data?.products || response.data || [];
+        if (isMounted) {
+          setProducts(Array.isArray(fetchedProducts) ? fetchedProducts : []);
+        }
+      } catch (fetchError) {
+        if (isMounted) {
+          setError("Failed to load products.");
+          setProducts([]);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchProducts();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const sourceItems = products;
+
+  const filteredClothing = sourceItems
+    .filter((item) => {
+      const itemCategory = item.category_name || item.category;
+      return category === "all" ? true : itemCategory === category;
+    })
+    .filter((item) => {
+      if (!searchTerm) return true;
+      const q = searchTerm.toLowerCase();
+      const title = item.product_name || item.title || "";
+      const description = item.description || "";
+      return (
+        title.toLowerCase().includes(q) ||
+        description.toLowerCase().includes(q)
+      );
+    });
 
   return (
     <div className="mx-auto max-w-7xl p-4 sm:px-6 lg:px-8 flex flex-col gap-6">
@@ -26,19 +78,23 @@ const Listing = ({clothing}) => {
         </div>
       </div>
       <div className="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-6 w-full">
-        {clothing
-          .filter((item) => (category === "all" ? true : item.category === category))
-          .filter((item) => {
-            if (!searchTerm) return true;
-            const q = searchTerm.toLowerCase();
-            return (
-              item.title.toLowerCase().includes(q) ||
-              (item.description && item.description.toLowerCase().includes(q))
-            );
-          })
-          .map((item) => (
-            <ListingCard key={item.image} clothes={item} />
-          ))}
+        {loading ? (
+          <div className="col-span-full rounded-2xl border border-dashed border-slate-200 bg-white py-16 text-center text-slate-400">
+            Loading products...
+          </div>
+        ) : error ? (
+          <div className="col-span-full rounded-2xl border border-dashed border-slate-200 bg-white py-16 text-center text-slate-400">
+            {error}
+          </div>
+        ) : filteredClothing.length === 0 ? (
+          <div className="col-span-full rounded-2xl border border-dashed border-slate-200 bg-white py-16 text-center text-slate-400">
+            No items match your filters.
+          </div>
+        ) : (
+          filteredClothing.map((item) => (
+            <ListingCard key={item.product_id || item.id} product={item} />
+          ))
+        )}
       </div>
     </div>
   );

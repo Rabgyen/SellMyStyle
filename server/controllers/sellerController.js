@@ -32,9 +32,9 @@ const registerSeller = async (req, res) => {
 
         // Get file paths
         const files = req.files || {};
-        const storeLogoPath = files.storeLogo ? `/uploads/${files.storeLogo[0].filename}` : null;
-        const idFrontPath = files.idFront ? `/uploads/${files.idFront[0].filename}` : null;
-        const idBackPath = files.idBack ? `/uploads/${files.idBack[0].filename}` : null;
+        const storeLogoPath = files.storeLogo ? `/uploads/${files.storeLogo[0].filename}` : "";
+        const idFrontPath = files.idFront ? `/uploads/${files.idFront[0].filename}` : "";
+        const idBackPath = files.idBack ? `/uploads/${files.idBack[0].filename}` : "";
 
         const now = new Date();
 
