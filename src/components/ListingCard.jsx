@@ -14,6 +14,7 @@ const ListingCard = ({ product, products, clothes, item }) => {
   const imageSource = data.primary_image ?? data.image_path ?? data.image ?? "";
   const discountPercentage = Number(data.discount_percentage);
   const hasDiscount = hasActiveDiscount(data);
+  const discountedPrice = price - (discountPercentage/100 * price)
 
   const { isFavorite, removeFromFavorite, addToFavorite } = useFavoriteContext();
 
@@ -79,9 +80,11 @@ const ListingCard = ({ product, products, clothes, item }) => {
             {title}
           </h2>
           <div className="mt-auto flex flex-col space-y-2">
-            <span className="inline-block text-gray-900 text-sm font-semibold p-1">
+            {discountedPrice ? (<span className="inline-block text-gray-900 text-sm font-semibold p-1">
+              Rs. {discountedPrice}
+            </span>) : (<span className="inline-block text-gray-900 text-sm font-semibold p-1">
               Rs. {price}
-            </span>
+            </span>)}
             {condition && (
               <span className="inline-block text-gray-800 text-xs px-2 py-1 ">
                 {condition}
