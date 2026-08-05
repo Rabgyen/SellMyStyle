@@ -72,7 +72,7 @@ const CartItem = ({ items }) => {
             </div>
 
             <div className='flex items-center gap-3'>
-              <button type="button" className='inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-black z-100' onClick={(e) => { e.preventDefault(); e.stopPropagation(); removeFromCart(items.id); }}>
+              <button type="button" className='inline-flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-black z-100' onClick={(e) => { e.preventDefault(); e.stopPropagation(); removeFromCart(items.id); }}>
                 <FaTrashAlt className='text-sm' />
                 Remove
               </button>

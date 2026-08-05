@@ -1,8 +1,8 @@
-import React from "react";
 import { LiaHeart, LiaHeartSolid } from "react-icons/lia";
 import { Link } from "react-router-dom";
 import { useFavoriteContext } from "../context/FavoriteContext";
 import { getClothingImageSrc, DEFAULT_CLOTHING_IMAGE } from "../utils/clothingImage";
+import { hasActiveDiscount } from "../utils/discount";
 
 const ListingCard = ({ product, products, clothes, item }) => {
   const data = product || products || clothes || item || {};
@@ -13,11 +13,7 @@ const ListingCard = ({ product, products, clothes, item }) => {
   const condition = data.product_condition ?? data.condition ?? "";
   const imageSource = data.primary_image ?? data.image_path ?? data.image ?? "";
   const discountPercentage = Number(data.discount_percentage);
-  const hasDiscount = data.discount_percentage !== null
-    && data.discount_percentage !== undefined
-    && data.discount_percentage !== ""
-    && Number.isFinite(discountPercentage)
-    && discountPercentage > 0;
+  const hasDiscount = hasActiveDiscount(data);
 
   const { isFavorite, removeFromFavorite, addToFavorite } = useFavoriteContext();
 

@@ -18,10 +18,11 @@ import {
   getClothingImageSrc,
   DEFAULT_CLOTHING_IMAGE,
 } from "../utils/clothingImage";
+import { getDiscountedPrice, hasActiveDiscount } from "../utils/discount";
 
 const normalizeDbProduct = (product) => {
   if (!product) return null;
-  console.log(product);
+  const discountIsActive = hasActiveDiscount(product);
   return {
     id: product.product_id,
     title: product.product_name,
@@ -44,9 +45,13 @@ const normalizeDbProduct = (product) => {
     store_name: product.store_name,
     store_logo: product.store_logo,
     user_id: product.user_id,
-    discount_percentage: product.discount_percentage,
-    discounted_price:
-      product.price - (product.discount_percentage / 100) * product.price,
+    discount_percentage: discountIsActive ? product.discount_percentage : null,
+    is_active: discountIsActive ? 1 : 0,
+    start_date: product.start_date,
+    end_date: product.end_date,
+    discounted_price: discountIsActive
+      ? getDiscountedPrice(product.price, product.discount_percentage)
+      : null,
   };
 };
 
@@ -76,7 +81,7 @@ const ClothingDetails = () => {
         if (isMounted && response.data.success) {
           setDbProduct(normalizeDbProduct(response.data.data));
         }
-      } catch (error) {
+      } catch {
         if (isMounted) {
           setDbProduct(null);
         }
@@ -95,6 +100,7 @@ const ClothingDetails = () => {
   }, [id]);
 
   const items = dbProduct || staticItem;
+  const discountIsActive = hasActiveDiscount(items);
   const cartItem = inCart(items?.id ?? numeirId);
   const favoriteItem = isFavorite(items?.id ?? numeirId);
 
@@ -185,7 +191,7 @@ const ClothingDetails = () => {
       <NavBar />
       <div className="flex flex-wrap rounded-2xl mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 gap-4 py-10">
         <div className="flex-1 relative rounded-2xl w-full h-128 overflow-hidden bg-white shadow-2xl sm:h-152 lg:h-176 min-w-80">
-          {items.discount_percentage ? (
+          {discountIsActive ? (
             <div className="absolute top-4 -left-6 z-10 text-center -rotate-45 bg-rose-600 w-24 text-xs font-bold text-white shadow-sm">
               {items.discount_percentage}% OFF
             </div>
@@ -211,14 +217,14 @@ const ClothingDetails = () => {
               <p className="font-bold">{items.store_name}</p>
             </div>
           </Link>
-          {items.discount_percentage ? (<div className="flex gap-2 items-center font-semibold">
+          {discountIsActive ? (<div className="flex gap-2 items-center font-semibold">
             <span className="px-5 py-1 rounded-md bg-[#3dc152] text-white shadow-md">{items.discount_percentage}% off</span>
             <span>Rs. {items.discounted_price}</span>
             <div className="relative opacity-75 before:content-[''] before:absolute before:border before:w-full before:bg-gray-500 before:top-1/2 before:-translate-y-1/2">
               Rs.{items.price}
             </div>
           </div>) : (<p className="text-sm font-semibold md:text-lg">
-            Rs. {items.discounted_price ? items.discounted_price : items.price}
+            Rs. {items.price}
           </p>)}
           <span className="flex gap-4 items-center justify-center">
             {cartItem ? (
@@ -312,7 +318,7 @@ const ClothingDetails = () => {
             <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4">
               <div className="flex gap-2 items-center p-2 ">
                 <span>
-                  {items.discount_percentage ? (
+                  {discountIsActive ? (
                     <span className="flex">
                       <p className="font-bold">{items.discount_percentage}</p>
                     </span>

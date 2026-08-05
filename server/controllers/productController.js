@@ -6,6 +6,46 @@ const beginTransaction = util.promisify(db.beginTransaction).bind(db);
 const commit = util.promisify(db.commit).bind(db);
 const rollback = util.promisify(db.rollback).bind(db);
 
+const deactivateExpiredDiscounts = () => query(
+    "UPDATE discounts SET is_active = 0 WHERE is_active = 1 AND end_date <= CURRENT_DATE()"
+);
+
+exports.deactivateExpiredDiscounts = deactivateExpiredDiscounts;
+
+const toDateKey = (value) => {
+    if (!value) return null;
+    if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+        return value;
+    }
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return null;
+
+    return [date.getFullYear(), String(date.getMonth() + 1).padStart(2, "0"), String(date.getDate()).padStart(2, "0")].join("-");
+};
+
+const sanitizeDiscount = (product) => {
+    const today = toDateKey(new Date());
+    const startDate = toDateKey(product.start_date);
+    const endDate = toDateKey(product.end_date);
+    const discountIsCurrent = Number(product.is_active) === 1
+        && Number(product.discount_percentage) > 0
+        && startDate
+        && endDate
+        && startDate <= today
+        && today < endDate;
+
+    if (discountIsCurrent) return product;
+
+    return {
+        ...product,
+        discount_percentage: null,
+        start_date: null,
+        end_date: null,
+        is_active: 0
+    };
+};
+
 exports.getProductCategory = (req, res) => {
     const sql = "SELECT * FROM categories";
 
@@ -149,14 +189,25 @@ exports.getProductById = async (req, res) => {
             });
         }
 
+        await deactivateExpiredDiscounts();
+
         const sql = `
             SELECT 
                 p.*,
                 c.category_name,
-                pi.image_path
+                pi.image_path,
+                s.store_name,
+                s.store_logo,
+                u.user_id,
+                (SELECT d.discount_percentage FROM discounts d WHERE d.product_id = p.product_id ORDER BY d.discount_id DESC LIMIT 1) AS discount_percentage,
+                (SELECT d.start_date FROM discounts d WHERE d.product_id = p.product_id ORDER BY d.discount_id DESC LIMIT 1) AS start_date,
+                (SELECT d.end_date FROM discounts d WHERE d.product_id = p.product_id ORDER BY d.discount_id DESC LIMIT 1) AS end_date,
+                (SELECT d.is_active FROM discounts d WHERE d.product_id = p.product_id ORDER BY d.discount_id DESC LIMIT 1) AS is_active
             FROM products p
             LEFT JOIN categories c ON p.category_id = c.category_id
             LEFT JOIN product_images pi ON p.product_id = pi.product_id AND pi.display_order = 1
+            LEFT JOIN seller_profiles s ON p.seller_id = s.seller_id
+            LEFT JOIN users u ON u.user_id = s.user_id
             WHERE p.product_id = ?
         `;
 
@@ -169,7 +220,7 @@ exports.getProductById = async (req, res) => {
             });
         }
 
-        const product = result[0];
+        const product = sanitizeDiscount(result[0]);
 
         res.status(200).json({
             success: true,
@@ -203,7 +254,11 @@ exports.updateProduct = async (req, res) => {
             season,
             length,
             width,
-            fit
+            fit,
+            discount_percentage,
+            start_date,
+            end_date,
+            is_active
         } = req.body;
 
         if (isNaN(productId)) {
@@ -218,6 +273,20 @@ exports.updateProduct = async (req, res) => {
                 success: false,
                 message: "name, category, price, and stock quantity are required"
             });
+        }
+
+        const hasDiscount = discount_percentage !== undefined && discount_percentage !== null && discount_percentage !== "";
+        if (hasDiscount) {
+            const percentage = Number(discount_percentage);
+            if (!Number.isFinite(percentage) || percentage < 0 || percentage > 100) {
+                return res.status(400).json({ success: false, message: "Discount percentage must be between 0 and 100" });
+            }
+            if (!start_date || !end_date) {
+                return res.status(400).json({ success: false, message: "A discount start date and end date are required" });
+            }
+            if (new Date(start_date) > new Date(end_date)) {
+                return res.status(400).json({ success: false, message: "Discount end date must be on or after its start date" });
+            }
         }
 
         const existingRows = await query("SELECT product_id FROM products WHERE product_id = ? LIMIT 1", [productId]);
@@ -267,6 +336,8 @@ exports.updateProduct = async (req, res) => {
             WHERE product_id = ?
         `;
 
+        await beginTransaction();
+
         await query(updateSql, [
             updates.product_name,
             updates.description,
@@ -287,8 +358,36 @@ exports.updateProduct = async (req, res) => {
             productId
         ]);
 
+        if (hasDiscount) {
+            const existingDiscount = await query(
+                "SELECT discount_id FROM discounts WHERE product_id = ? ORDER BY discount_id DESC LIMIT 1",
+                [productId]
+            );
+            const requestedEndDate = toDateKey(end_date);
+            const isExpired = requestedEndDate <= toDateKey(new Date());
+            const discountValues = [Number(discount_percentage), start_date, end_date, is_active && !isExpired ? 1 : 0];
+
+            if (existingDiscount.length) {
+                await query(
+                    "UPDATE discounts SET discount_percentage = ?, start_date = ?, end_date = ?, is_active = ? WHERE discount_id = ?",
+                    [...discountValues, existingDiscount[0].discount_id]
+                );
+            } else {
+                await query(
+                    "INSERT INTO discounts (product_id, discount_percentage, start_date, end_date, is_active) VALUES (?, ?, ?, ?, ?)",
+                    [productId, ...discountValues]
+                );
+            }
+        }
+
+        await commit();
+
         const updatedProduct = await query(
-            `SELECT p.*, c.category_name, pi.image_path
+            `SELECT p.*, c.category_name, pi.image_path,
+                    (SELECT d.discount_percentage FROM discounts d WHERE d.product_id = p.product_id ORDER BY d.discount_id DESC LIMIT 1) AS discount_percentage,
+                    (SELECT d.start_date FROM discounts d WHERE d.product_id = p.product_id ORDER BY d.discount_id DESC LIMIT 1) AS start_date,
+                    (SELECT d.end_date FROM discounts d WHERE d.product_id = p.product_id ORDER BY d.discount_id DESC LIMIT 1) AS end_date,
+                    (SELECT d.is_active FROM discounts d WHERE d.product_id = p.product_id ORDER BY d.discount_id DESC LIMIT 1) AS is_active
              FROM products p
              LEFT JOIN categories c ON p.category_id = c.category_id
              LEFT JOIN product_images pi ON p.product_id = pi.product_id AND pi.display_order = 1
@@ -300,9 +399,14 @@ exports.updateProduct = async (req, res) => {
         res.json({
             success: true,
             message: "Product updated successfully",
-            product: updatedProduct[0]
+            product: sanitizeDiscount(updatedProduct[0])
         });
     } catch (error) {
+        try {
+            await rollback();
+        } catch (rollbackError) {
+            console.error("Rollback error in updateProduct:", rollbackError);
+        }
         console.error("Error in updateProduct:", error);
         res.status(500).json({
             success: false,
@@ -313,22 +417,22 @@ exports.updateProduct = async (req, res) => {
 };
 
 
-exports.getProduct = (req, res) => {
-    const sql = 'SELECT p.product_id, p.seller_id,p.category_id,c.category_name,p.product_name,p.description,p.price,p.original_price,p.stock_quantity,p.brand,p.size,p.product_condition,p.color,p.material,p.season,p.length,p.width,p.fit,pi.image_id,pi.image_path,pi.display_order,p.created_at,p.updated_at FROM products AS p LEFT JOIN categories AS c ON p.category_id = c.category_id LEFT JOIN product_images AS pi ON p.product_id = pi.product_id AND pi.display_order = 1 ORDER BY p.product_id';
+exports.getProduct = async (req, res) => {
+    try {
+        await deactivateExpiredDiscounts();
 
-    db.query(sql, (err, result) => {
-        if (err) {
-            return res.status(500).json({
-                message: "Database Error",
-                error: err
-            });
-        }
+        const sql = 'SELECT p.product_id, p.seller_id,p.category_id,c.category_name,p.product_name,p.description,p.price,p.original_price,p.stock_quantity,p.brand,p.size,p.product_condition,p.color,p.material,p.season,p.length,p.width,p.fit,pi.image_id,pi.image_path,pi.display_order,s.seller_id, s.store_name, s.store_logo,p.created_at,p.updated_at,(SELECT d.discount_percentage FROM discounts d WHERE d.product_id = p.product_id ORDER BY d.discount_id DESC LIMIT 1) AS discount_percentage,(SELECT d.start_date FROM discounts d WHERE d.product_id = p.product_id ORDER BY d.discount_id DESC LIMIT 1) AS start_date,(SELECT d.end_date FROM discounts d WHERE d.product_id = p.product_id ORDER BY d.discount_id DESC LIMIT 1) AS end_date,(SELECT d.is_active FROM discounts d WHERE d.product_id = p.product_id ORDER BY d.discount_id DESC LIMIT 1) AS is_active FROM products AS p LEFT JOIN categories AS c ON p.category_id = c.category_id LEFT JOIN product_images AS pi ON p.product_id = pi.product_id AND pi.display_order = 1 LEFT JOIN seller_profiles AS s ON p.seller_id = s.seller_id ORDER BY p.product_id';
+        const result = await query(sql);
 
         res.status(200).json({
             success: true,
-            products: result
+            products: result.map(sanitizeDiscount)
         });
-    });
-
-
-}
+    } catch (error) {
+        console.error("Error in getProduct:", error);
+        res.status(500).json({
+            message: "Database Error",
+            error: error.message
+        });
+    }
+};

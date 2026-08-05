@@ -19,6 +19,7 @@ const Listing = ({ clothing = [] }) => {
       try {
         const response = await axios.get("http://localhost:5000/product/products");
         const fetchedProducts = response.data?.products || response.data || [];
+        console.log(response.data)
         if (isMounted) {
           setProducts(Array.isArray(fetchedProducts) ? fetchedProducts : []);
         }

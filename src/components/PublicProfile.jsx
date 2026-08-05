@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { FiShare2, FiLink, FiGrid, FiLayers, FiGlobe, FiInstagram, FiFacebook, FiYoutube, FiTwitter } from "react-icons/fi";
 import ListingCard from "./ListingCard";
 
-const PublicProfile = ({ user, sellerProfile, sellerProducts, sellerCollections }) => {
+const PublicProfile = ({ user, sellerProfile, sellerProducts }) => {
   const [activeTab, setActiveTab] = useState("items");
   const isVerifiedSeller = sellerProfile?.verification_status === "Approved" || sellerProfile?.verification_status === "Verified";
 
@@ -151,41 +151,16 @@ const PublicProfile = ({ user, sellerProfile, sellerProducts, sellerCollections 
           </div>
         )}
 
+
         {activeTab === "collection" && (
-          <div className="animate-[fadeIn_0.2s_ease]">
-            {sellerCollections && sellerCollections.length > 0 ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-                {sellerCollections.map((col) => (
-                  <div key={col.category_id} className="group relative rounded-2xl overflow-hidden bg-slate-100 aspect-square cursor-pointer">
-                    {col.cover_image ? (
-                      <img
-                        src={`http://localhost:5000${col.cover_image}`}
-                        alt={col.name}
-                        className="w-full h-full object-cover transition duration-500 group-hover:scale-110"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-indigo-50 text-indigo-300">
-                        <FiLayers className="w-12 h-12" />
-                      </div>
-                    )}
-                    <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent flex flex-col justify-end p-5">
-                      <h3 className="text-lg font-bold text-white">{col.name}</h3>
-                      <p className="text-white/80 text-sm font-medium">{col.item_count} items</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-20 text-center">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 text-slate-400 mb-4">
-                  <FiLayers className="w-8 h-8" />
-                </div>
-                <h3 className="text-lg font-semibold text-slate-700">No collections</h3>
-                <p className="mt-1 text-sm text-slate-500">
-                  This user hasn't organized their items into collections.
-                </p>
-              </div>
-            )}
+          <div className="flex flex-col items-center justify-center py-20 text-center animate-[fadeIn_0.2s_ease]">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 text-slate-400 mb-4">
+              <FiLayers className="w-8 h-8" />
+            </div>
+            <h3 className="text-lg font-semibold text-slate-700">No collections available right now</h3>
+            <p className="mt-1 text-sm text-slate-500">
+              Collections are separate from listed items and will be available later.
+            </p>
           </div>
         )}
       </div>

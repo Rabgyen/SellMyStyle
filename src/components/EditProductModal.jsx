@@ -3,6 +3,8 @@ import axios from "axios";
 import { FiAlertCircle, FiCheck, FiX } from "react-icons/fi";
 import { useCategoryContext } from "../context/CategoryContext";
 
+const formatDateForInput = (value) => (value ? String(value).slice(0, 10) : "");
+
 const fieldFromProduct = (product) => ({
   name: product?.product_name || "",
   description: product?.description || "",
@@ -19,6 +21,10 @@ const fieldFromProduct = (product) => ({
   length: product?.length ?? "",
   width: product?.width ?? "",
   fit: product?.fit || "",
+  discount_percentage: product?.discount_percentage ?? "",
+  start_date: formatDateForInput(product?.start_date),
+  end_date: formatDateForInput(product?.end_date),
+  is_active: Boolean(Number(product?.is_active ?? 0)),
 });
 
 const EditProductModal = ({ isOpen, onClose, product, onSuccess }) => {
@@ -47,10 +53,10 @@ const EditProductModal = ({ isOpen, onClose, product, onSuccess }) => {
   }, [isOpen, product]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
 
     setFormData((prev) => {
-      const next = { ...prev, [name]: value };
+      const next = { ...prev, [name]: type === "checkbox" ? checked : value };
       if (name === "category_id" && ["shades", "accessories"].includes(value.trim().toLowerCase())) {
         next.fit = "";
         next.season = "";
@@ -77,6 +83,7 @@ const EditProductModal = ({ isOpen, onClose, product, onSuccess }) => {
       const payload = {
         ...formData,
         category_id: resolveCategoryValue(formData.category_id),
+        product_id: product.product_id,
       };
 
       const response = await axios.put(`http://localhost:5000/product/${product.product_id}`, payload);
@@ -180,6 +187,33 @@ const EditProductModal = ({ isOpen, onClose, product, onSuccess }) => {
                 <input name="stock_quantity" type="number" min="0" value={formData.stock_quantity} onChange={handleChange} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm focus:border-indigo-400 focus:ring-1 focus:ring-indigo-500 focus:outline-none" />
               </div>
             </div>
+
+            <section className="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
+              <div className="mb-4 flex items-center justify-between gap-4">
+                <div>
+                  <h4 className="text-sm font-semibold text-slate-700">Discount</h4>
+                  <p className="text-xs text-slate-500">Set the percentage and the period it is available.</p>
+                </div>
+                <label className="inline-flex cursor-pointer items-center gap-2 text-sm font-medium text-slate-700">
+                  <input name="is_active" type="checkbox" checked={formData.is_active} onChange={handleChange} className="h-4 w-4 rounded border-slate-300 text-indigo-500 focus:ring-indigo-500" />
+                  Active
+                </label>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Percentage</label>
+                  <input name="discount_percentage" type="number" min="0" max="100" step="0.01" value={formData.discount_percentage} onChange={handleChange} placeholder="e.g. 15" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm focus:border-indigo-400 focus:ring-1 focus:ring-indigo-500 focus:outline-none" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Start Date</label>
+                  <input name="start_date" type="date" value={formData.start_date} onChange={handleChange} className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm focus:border-indigo-400 focus:ring-1 focus:ring-indigo-500 focus:outline-none" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">End Date</label>
+                  <input name="end_date" type="date" min={formData.start_date || undefined} value={formData.end_date} onChange={handleChange} className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm focus:border-indigo-400 focus:ring-1 focus:ring-indigo-500 focus:outline-none" />
+                </div>
+              </div>
+            </section>
 
             {!isShadesOrAccessories && (
               <div className="grid gap-4 sm:grid-cols-2">
