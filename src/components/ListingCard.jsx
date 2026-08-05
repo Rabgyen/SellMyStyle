@@ -12,6 +12,12 @@ const ListingCard = ({ product, products, clothes, item }) => {
   const price = data.price ?? "";
   const condition = data.product_condition ?? data.condition ?? "";
   const imageSource = data.primary_image ?? data.image_path ?? data.image ?? "";
+  const discountPercentage = Number(data.discount_percentage);
+  const hasDiscount = data.discount_percentage !== null
+    && data.discount_percentage !== undefined
+    && data.discount_percentage !== ""
+    && Number.isFinite(discountPercentage)
+    && discountPercentage > 0;
 
   const { isFavorite, removeFromFavorite, addToFavorite } = useFavoriteContext();
 
@@ -30,7 +36,12 @@ const ListingCard = ({ product, products, clothes, item }) => {
   };
 
   return (
-    <Link to={id ? `/clothes/${id}` : "#"} className="block group">
+    <Link to={id ? `/clothes/${id}` : "#"} className="relative block group overflow-hidden">
+      {hasDiscount && (
+        <div className="absolute top-4 -left-6 z-10 text-center -rotate-45 bg-rose-600 w-24 text-xs font-bold text-white shadow-sm">
+          {discountPercentage}% OFF
+        </div>
+      )}
       <div className="relative flex flex-col h-full rounded-3xl border border-slate-200 bg-white shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:rotate-1">
         {/* Favorite Button */}
         <button
