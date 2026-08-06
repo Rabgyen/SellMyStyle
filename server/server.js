@@ -2,6 +2,7 @@ const express = require("express");
 const mysql = require("mysql");
 const cors = require("cors");
 const path = require("path");
+require("dotenv").config();
 
 const db = require("./config/db");
 const { deactivateExpiredDiscounts } = require("./controllers/productController");
@@ -10,6 +11,8 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+
+
 
 // Serve uploaded profile pictures as static files
 // e.g. GET http://localhost:5000/uploads/avatar_7_1234567890.jpg

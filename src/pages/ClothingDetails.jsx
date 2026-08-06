@@ -22,6 +22,7 @@ import { getDiscountedPrice, hasActiveDiscount } from "../utils/discount";
 
 const normalizeDbProduct = (product) => {
   if (!product) return null;
+  console.log(product);
   const discountIsActive = hasActiveDiscount(product);
   return {
     id: product.product_id,
@@ -52,9 +53,11 @@ const normalizeDbProduct = (product) => {
     discounted_price: discountIsActive
       ? getDiscountedPrice(product.price, product.discount_percentage)
       : null,
+    discount_start_date: product.start_date,
+    disount_expire_date: product.end_date,
+    rating: product.average_rating
   };
 };
-
 const ClothingDetails = () => {
   const { id } = useParams();
   const numeirId = Number(id);
@@ -162,6 +165,32 @@ const ClothingDetails = () => {
     return getClothingImageSrc(items?.image);
   }, [dbProduct, items?.image]);
 
+  const date = new Date();
+
+  const day = date.getDate();
+  const nextday = day + 1;
+
+  const month = date.toLocaleDateString("en-US", {
+    month: "short",
+  });
+
+  const formattedDate = `${day}-${nextday} ${month}`;
+
+  const discountDate = (dateString) => {
+    const date = new Date(dateString);
+
+    return `${date.getDate()} ${date.toLocaleString("en-US", {
+      month: "short",
+    })}`;
+  };
+
+  const handleRating = async (value) => {
+    setRating(value);
+    await axios.post("http://localhostL5000/product/rating"), {
+      product_id: items.product_id,
+    }
+  }
+
   if (loading && !items) {
     return (
       <div className="min-h-screen w-full bg-white">
@@ -217,15 +246,21 @@ const ClothingDetails = () => {
               <p className="font-bold">{items.store_name}</p>
             </div>
           </Link>
-          {discountIsActive ? (<div className="flex gap-2 items-center font-semibold">
-            <span className="px-5 py-1 rounded-md bg-[#3dc152] text-white shadow-md">{items.discount_percentage}% off</span>
-            <span>Rs. {items.discounted_price}</span>
-            <div className="relative opacity-75 before:content-[''] before:absolute before:border before:w-full before:bg-gray-500 before:top-1/2 before:-translate-y-1/2">
-              Rs.{items.price}
+          {discountIsActive ? (
+            <div className="flex gap-2 items-center font-semibold">
+              <span className="px-5 py-1 rounded-md bg-[#3dc152] text-white shadow-md">
+                {items.discount_percentage}% off
+              </span>
+              <span>Rs. {items.discounted_price}</span>
+              <div className="relative opacity-75 before:content-[''] before:absolute before:border before:w-full before:bg-gray-500 before:top-1/2 before:-translate-y-1/2">
+                Rs.{items.price}
+              </div>
             </div>
-          </div>) : (<p className="text-sm font-semibold md:text-lg">
-            Rs. {items.price}
-          </p>)}
+          ) : (
+            <p className="text-sm font-semibold md:text-lg">
+              Rs. {items.price}
+            </p>
+          )}
           <span className="flex gap-4 items-center justify-center">
             {cartItem ? (
               <Link to="/cart" className="w-full">
@@ -308,7 +343,7 @@ const ClothingDetails = () => {
                 <FaShippingFast className="text-2xl" />
                 <span>
                   <p className="text-xs text-black/45">Estimate Arrival</p>
-                  <p className="text-sm">5-6 May</p>
+                  <p className="text-sm">{formattedDate}</p>
                 </span>
               </div>
             </div>
@@ -319,16 +354,19 @@ const ClothingDetails = () => {
               <div className="flex gap-2 items-center p-2 ">
                 <span>
                   {discountIsActive ? (
-                    <span className="flex">
-                      <p className="font-bold">{items.discount_percentage}</p>
+                    <span className="flex gap-2">
+                      <p className="font-bold">{items.discount_percentage}% </p> 
+                      <p className="text-gray-500">
+                        Valid Till: {discountDate(items.start_date)} -{" "}
+                        {discountDate(items.end_date)}
+                      </p>
                     </span>
                   ) : (
                     <p className="text-xs text-center text-black/45">
-                      No discount Available
+                      <CiDiscount1 className="text-2xl" /> No discount Available
                     </p>
                   )}
                 </span>
-                <CiDiscount1 className="text-2xl" />
               </div>
             </div>
           </div>

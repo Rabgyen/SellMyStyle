@@ -196,6 +196,7 @@ const styleTags = [
 /* ────────────────────────────────────────────────────────────── */
 const Profile = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
   const { cart } = useCartContext();
   const { favorite } = useFavoriteContext();
 
@@ -206,7 +207,8 @@ const Profile = () => {
   const [showPostItemModal, setShowPostItemModal] = useState(false);
   const [showEditProductModal, setShowEditProductModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
-  const [showCreateCollectionModal, setShowCreateCollectionModal] = useState(false);
+  const [showCreateCollectionModal, setShowCreateCollectionModal] =
+    useState(false);
   const [user, setUser] = useState(null);
   const [sellerProfile, setSellerProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -216,13 +218,13 @@ const Profile = () => {
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [avatarError, setAvatarError] = useState("");
 
-  const { id: paramId } = useParams();
-  const userId = paramId || localStorage.getItem("user_id");
+const token = localStorage.getItem("token");
+  const loggedInUserId = localStorage.getItem("user_id");
 
   /* ─── fetch user ─── */
   useEffect(() => {
     const fetchUser = async () => {
-      if (!userId) {
+      if (!token) {
         setLoading(false);
         return;
       }
@@ -230,9 +232,20 @@ const Profile = () => {
       try {
         setLoading(true);
 
-        const response = await axios.get(
-          `http://localhost:5000/profile/${userId}`,
-        );
+        let response;
+        // If viewing another user's profile by id, fetch it publicly (view-only)
+        if (id && id !== "account" && String(id) !== String(loggedInUserId)) {
+          response = await axios.get(
+            `http://localhost:5000/profile/${id}`,
+          );
+        } else {
+          // Otherwise fetch the logged-in user's own profile via JWT
+          response = await axios.get("http://localhost:5000/profile", {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+        }
 
         if (response.data.success) {
           setUser(response.data.user);
@@ -243,7 +256,7 @@ const Profile = () => {
           // Debug
           console.log("User:", response.data.user);
           console.log("Seller:", response.data.sellerProfile);
-          console.log(response.data.sellerProfile.seller_id)
+          console.log(response.data.sellerProfile?.seller_id);
         }
       } catch (err) {
         console.error(err);
@@ -253,7 +266,7 @@ const Profile = () => {
     };
 
     fetchUser();
-  }, [userId]);
+  }, [id]);
 
   /* ─── fetch seller products & collections if user is a seller ─── */
   const [sellerProducts, setSellerProducts] = useState([]);
@@ -290,6 +303,7 @@ const Profile = () => {
     }
   }, [sellerProfile?.seller_id]);
 
+const userId = user?.id;
   const initials = user?.username ? getInitials(user.username) : "?";
   const location =
     [user?.city, user?.country].filter(Boolean).join(", ") || "Not set";
@@ -388,10 +402,9 @@ const Profile = () => {
     setAvatarError("");
   };
 
-  /* ─── tabs ─── */
-  const isOwnProfile = userId === localStorage.getItem("user_id");
-  const isVerifiedSeller =
-    sellerProfile?.verification_status === "Approved";
+/* ─── tabs ─── */
+  const isOwnProfile = !id || id === "account" || String(id) === String(loggedInUserId);
+  const isVerifiedSeller = sellerProfile?.verification_status === "Approved";
 
   const tabs = [
     { id: "overview", label: "Overview", icon: FiUser },
@@ -409,9 +422,7 @@ const Profile = () => {
     },
     // Show Seller Storefront for any verified/approved seller
     ...(isVerifiedSeller
-      ? [
-          { id: "storefront", label: "Seller Storefront", icon: FiGrid },
-        ]
+      ? [{ id: "storefront", label: "Seller Storefront", icon: FiGrid }]
       : []),
     { id: "settings", label: "Settings", icon: FiSettings },
   ];
@@ -447,11 +458,11 @@ const Profile = () => {
       <div className="min-h-screen bg-white text-slate-800">
         <NavBar />
         <main className="mx-auto max-w-4xl px-4 pt-10 pb-16 sm:px-6">
-          <PublicProfile 
-            user={user} 
-            sellerProfile={sellerProfile} 
-            sellerProducts={sellerProducts} 
-            sellerCollections={sellerCollections} 
+          <PublicProfile
+            user={user}
+            sellerProfile={sellerProfile}
+            sellerProducts={sellerProducts}
+            sellerCollections={sellerCollections}
           />
         </main>
       </div>
@@ -763,7 +774,6 @@ const Profile = () => {
               </div>
 
               {/* Seller Storefront - Items Posted & Collection Sets */}
-              
 
               {/* Seller CTA */}
               {!isVerifiedSeller && (
@@ -964,10 +974,22 @@ const Profile = () => {
           {activeTab === "storefront" && isVerifiedSeller && (
             <div className="space-y-6 animate-[fadeIn_0.25s_ease]">
               {/* Sub-navigation for Storefront */}
-              <nav className="flex gap-2 rounded-full bg-slate-50 p-1" aria-label="Storefront sections">
+              <nav
+                className="flex gap-2 rounded-full bg-slate-50 p-1"
+                aria-label="Storefront sections"
+              >
                 {[
-                  { id: "items", label: "Items Posted", icon: FiGrid, count: sellerProducts.length },
-                  { id: "collections", label: "Collection Sets", icon: FiLayers },
+                  {
+                    id: "items",
+                    label: "Items Posted",
+                    icon: FiGrid,
+                    count: sellerProducts.length,
+                  },
+                  {
+                    id: "collections",
+                    label: "Collection Sets",
+                    icon: FiLayers,
+                  },
                 ].map((tab) => (
                   <button
                     key={tab.id}
@@ -981,9 +1003,13 @@ const Profile = () => {
                     <tab.icon className="w-4 h-4" />
                     {tab.label}
                     {tab.count > 0 && (
-                      <span className={`text-[11px] font-semibold rounded-full px-1.5 py-0.5 ${
-                        storefrontTab === tab.id ? "bg-indigo-50 text-indigo-500" : "bg-slate-100 text-slate-600"
-                      }`}>
+                      <span
+                        className={`text-[11px] font-semibold rounded-full px-1.5 py-0.5 ${
+                          storefrontTab === tab.id
+                            ? "bg-indigo-50 text-indigo-500"
+                            : "bg-slate-100 text-slate-600"
+                        }`}
+                      >
                         {tab.count}
                       </span>
                     )}
@@ -995,9 +1021,14 @@ const Profile = () => {
               {storefrontTab === "items" && (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-sm font-semibold text-slate-700">Items Posted</h2>
+                    <h2 className="text-sm font-semibold text-slate-700">
+                      Items Posted
+                    </h2>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-slate-400">{sellerProducts.length} item{sellerProducts.length !== 1 ? "s" : ""}</span>
+                      <span className="text-xs text-slate-400">
+                        {sellerProducts.length} item
+                        {sellerProducts.length !== 1 ? "s" : ""}
+                      </span>
                       <button
                         onClick={() => setShowPostItemModal(true)}
                         className="inline-flex items-center gap-1.5 rounded-full bg-indigo-500 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-indigo-600"
@@ -1020,9 +1051,13 @@ const Profile = () => {
                   ) : (
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                       {sellerProducts.map((product) => {
-                        const primaryImage = product.primary_image || `/src/assets/shirt-1.jpg`;
+                        const primaryImage =
+                          product.primary_image || `/src/assets/shirt-1.jpg`;
                         return (
-                          <article key={product.product_id} className="group relative overflow-hidden rounded-2xl border border-slate-100 bg-white transition hover:shadow-md">
+                          <article
+                            key={product.product_id}
+                            className="group relative overflow-hidden rounded-2xl border border-slate-100 bg-white transition hover:shadow-md"
+                          >
                             <button
                               type="button"
                               onClick={(e) => {
@@ -1037,13 +1072,19 @@ const Profile = () => {
                               Edit
                             </button>
 
-                            <Link to={`/clothes/${product.product_id}`} className="block">
+                            <Link
+                              to={`/clothes/${product.product_id}`}
+                              className="block"
+                            >
                               <div className="relative aspect-4/3 bg-slate-50 overflow-hidden">
                                 <img
                                   src={`http://localhost:5000${primaryImage}`}
                                   alt={product.product_name}
                                   className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                  onError={(e) => { e.currentTarget.src = "/src/assets/shirt-1.jpg"; }}
+                                  onError={(e) => {
+                                    e.currentTarget.src =
+                                      "/src/assets/shirt-1.jpg";
+                                  }}
                                 />
                                 <span className="absolute top-3 left-3 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium bg-emerald-50 text-emerald-600">
                                   <FiCheckCircle className="w-3 h-3" />
@@ -1051,11 +1092,21 @@ const Profile = () => {
                                 </span>
                               </div>
                               <div className="p-4">
-                                <h3 className="text-sm font-semibold text-slate-700 line-clamp-1">{product.product_name}</h3>
-                                <p className="mt-1 text-base font-bold text-indigo-500">₨{Number(product.price).toLocaleString()}</p>
+                                <h3 className="text-sm font-semibold text-slate-700 line-clamp-1">
+                                  {product.product_name}
+                                </h3>
+                                <p className="mt-1 text-base font-bold text-indigo-500">
+                                  ₨{Number(product.price).toLocaleString()}
+                                </p>
                                 <div className="mt-2.5 flex items-center gap-4 text-[11px] text-slate-400">
-                                  <span className="inline-flex items-center gap-1"><FiHeart className="w-3 h-3" /> {product.views || 0}</span>
-                                  <span className="inline-flex items-center gap-1"><FiTrendingUp className="w-3 h-3" /> {product.views || 0}</span>
+                                  <span className="inline-flex items-center gap-1">
+                                    <FiHeart className="w-3 h-3" />{" "}
+                                    {product.views || 0}
+                                  </span>
+                                  <span className="inline-flex items-center gap-1">
+                                    <FiTrendingUp className="w-3 h-3" />{" "}
+                                    {product.views || 0}
+                                  </span>
                                 </div>
                               </div>
                             </Link>
@@ -1071,9 +1122,14 @@ const Profile = () => {
               {storefrontTab === "collections" && (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-sm font-semibold text-slate-700">Collection Sets</h2>
+                    <h2 className="text-sm font-semibold text-slate-700">
+                      Collection Sets
+                    </h2>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-slate-400">{sellerCollections.length} collection{sellerCollections.length !== 1 ? "s" : ""}</span>
+                      <span className="text-xs text-slate-400">
+                        {sellerCollections.length} collection
+                        {sellerCollections.length !== 1 ? "s" : ""}
+                      </span>
                       <button
                         onClick={() => setShowCreateCollectionModal(true)}
                         className="inline-flex items-center gap-1.5 rounded-full bg-indigo-500 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-indigo-600"
@@ -1344,14 +1400,16 @@ const Profile = () => {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       {/*  POST NEW ITEM MODAL                                     */}
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      {showPostItemModal && <PostItemModal
-        isOpen={showPostItemModal}
-        onClose={() => setShowPostItemModal(false)}
-        sellerId={sellerProfile?.seller_id}
-        onSuccess={() => {
-          setShowPostItemModal(false);
-        }}
-      />}
+      {showPostItemModal && (
+        <PostItemModal
+          isOpen={showPostItemModal}
+          onClose={() => setShowPostItemModal(false)}
+          sellerId={sellerProfile?.seller_id}
+          onSuccess={() => {
+            setShowPostItemModal(false);
+          }}
+        />
+      )}
 
       {showEditProductModal && editingProduct && (
         <EditProductModal
@@ -1378,14 +1436,16 @@ const Profile = () => {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       {/*  CREATE COLLECTION MODAL                                 */}
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      {showCreateCollectionModal && <CreateCollectionModal
-        isOpen={showCreateCollectionModal}
-        onClose={() => setShowCreateCollectionModal(false)}
-        sellerId={sellerProfile?.seller_id}
-        onSuccess={() => {
-          setShowCreateCollectionModal(false);
-        }}
-      />}
+      {showCreateCollectionModal && (
+        <CreateCollectionModal
+          isOpen={showCreateCollectionModal}
+          onClose={() => setShowCreateCollectionModal(false)}
+          sellerId={sellerProfile?.seller_id}
+          onSuccess={() => {
+            setShowCreateCollectionModal(false);
+          }}
+        />
+      )}
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       {/*  SELLER VERIFICATION MODAL                               */}
@@ -1403,6 +1463,5 @@ const Profile = () => {
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 /*  POST NEW ITEM MODAL                                              */
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-
 
 export default Profile;

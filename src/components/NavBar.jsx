@@ -66,7 +66,7 @@ const NavBar = () => {
             <FaRegHeart aria-hidden="true" />
           </button></Link>
 
-          <Link to={`/profile/${user_id}`}>
+<Link to={user_id ? `/profile/${user_id}` : `/account`}>
             <button
               type="button"
               className="inline-flex items-center justify-center rounded-full p-2 text-slate-700 transition hover:bg-slate-100"
@@ -126,7 +126,7 @@ const NavBar = () => {
             <Link to="/favorites" className="rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-200">
               Favorites
             </Link>
-            <Link to="/profile" className="rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-200">
+<Link to={user_id ? `/profile/${user_id}` : `/account`} className="rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-200">
               Account
             </Link>
             <Link to="/" className="rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-200">

@@ -1,4 +1,5 @@
 const db = require("../config/db");
+const jwt = require('jsonwebtoken');
 
 exports.signUpUser = (req, res) => {
 
@@ -84,19 +85,22 @@ exports.loginUser = (req, res) => {
                 });
             }
 
+            const token = jwt.sign(
+                {
+                    user_id: user.user_id,
+                    email: user.email
+                },
+                process.env.JWT_SECRET,
+                {
+                    expiresIn: '1d'
+                }
+
+            )
+            console.log(token)
             res.json({
                 success: true,
-                message: "Login Successful",
-                user: {
-                    user_id: user.user_id,
-                    username: user.username,
-                    email: user.email,
-                    phone: user.phone,
-                    country: user.country,
-                    city: user.city,
-                    bio: user.bio,
-                    profile_picture: user.profile_picture
-                }
+                token,
+                user
             });
 
         }
@@ -105,7 +109,7 @@ exports.loginUser = (req, res) => {
 };
 
 exports.getUserProfile = (req, res) => {
-    const userId = req.params.id || req.query.id;
+    const userId = req.user.user_id;
 
     if (!userId) {
         return res.status(400).json({ success: false, message: "User ID required" });
@@ -159,7 +163,7 @@ exports.getUserProfile = (req, res) => {
                     }
 
                     const sellerProfile = sellerResults.length > 0 ? sellerResults[0] : null;
-                    
+
                     const sendResponse = (profileWithLinks = null) => {
                         res.json({
                             success: true,
@@ -195,6 +199,71 @@ exports.getUserProfile = (req, res) => {
                         });
                     } else {
                         sendResponse(null);
+                    }
+                }
+            );
+        }
+    );
+};
+
+exports.getUserById = (req, res) => {
+    const userId = req.params.id;
+
+    if (!userId) {
+        return res.status(400).json({ success: false, message: "User ID required" });
+    }
+
+    db.query(
+        "SELECT user_id, username, email, phone, nationality, country, city, postal_code, street_address, bio, profile_picture, followers_count, following_count, created_at FROM users WHERE user_id = ?",
+        [userId],
+        (err, result) => {
+            if (err) {
+                console.log(err);
+                return res.status(500).json({ success: false, message: "Database error" });
+            }
+
+            if (result.length === 0) {
+                return res.status(404).json({ success: false, message: "User not found" });
+            }
+
+            const user = result[0];
+            const userObj = {
+                id: user.user_id,
+                username: user.username,
+                email: user.email,
+                phone: user.phone,
+                nationality: user.nationality,
+                country: user.country,
+                city: user.city,
+                postal_code: user.postal_code,
+                street_address: user.street_address,
+                bio: user.bio,
+                profile_picture: user.profile_picture,
+                followers_count: user.followers_count,
+                following_count: user.following_count,
+                memberSince: user.created_at ? new Date(user.created_at).getFullYear().toString() : "2024",
+                created_at: user.created_at
+            };
+
+            db.query(
+                `SELECT seller_id, store_name, store_description, store_logo, business_type, verification_status, submitted_at
+                 FROM seller_profiles WHERE user_id = ?`,
+                [userId],
+                (err2, sellerResults) => {
+                    if (err2) {
+                        console.error("Error fetching seller profile:", err2);
+                        return res.json({ success: true, user: userObj, sellerProfile: null });
+                    }
+
+                    const sellerProfile = sellerResults.length > 0 ? sellerResults[0] : null;
+
+                    if (sellerProfile) {
+                        db.query("SELECT platform, url FROM seller_social_links WHERE seller_id = ?", [sellerProfile.seller_id], (err3, socialLinks) => {
+                            sellerProfile.socialLinks = !err3 ? socialLinks : [];
+                            return res.json({ success: true, user: userObj, sellerProfile });
+                        });
+                    } else {
+                        return res.json({ success: true, user: userObj, sellerProfile: null });
                     }
                 }
             );
@@ -270,7 +339,7 @@ exports.uploadProfilePicture = (req, res) => {
             if (result.length > 0 && result[0].profile_picture) {
                 const oldFile = result[0].profile_picture; // e.g. "/uploads/avatar_7_xxx.jpg"
                 const oldPath = require("path").join(__dirname, "..", oldFile);
-                require("fs").unlink(oldPath, () => {}); // silently ignore if already gone
+                require("fs").unlink(oldPath, () => { }); // silently ignore if already gone
             }
 
             // Save new path to DB
@@ -290,4 +359,4 @@ exports.uploadProfilePicture = (req, res) => {
             );
         }
     );
-};
+};

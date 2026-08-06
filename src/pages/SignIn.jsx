@@ -42,19 +42,20 @@ const SignIn = () => {
     setErrors({
       email: "",
       password: "",
-    });
+});
 
     try {
       const response = await axios.post(
         "http://localhost:5000/login",
         formData,
       );
-
+      console.log(response.data)
       if (response.data.success) {
-        localStorage.setItem("isLoggedIn", "true");
+        localStorage.setItem("token", response.data.token);
         localStorage.setItem("user_id", response.data.user.user_id);
         localStorage.setItem("userEmail", response.data.user.email);
         localStorage.setItem("userName", response.data.user.username);
+        localStorage.setItem("isLoggedIn", "true");
         navigate("/");
       } else {
         setErrors((prev) => ({

@@ -200,6 +200,7 @@ exports.getProductById = async (req, res) => {
                 s.store_logo,
                 u.user_id,
                 (SELECT d.discount_percentage FROM discounts d WHERE d.product_id = p.product_id ORDER BY d.discount_id DESC LIMIT 1) AS discount_percentage,
+                (SELECT ROUND(AVG(r.rating), 1) FROM product_reviews r WHERE r.product_id = p.product_id) AS average_rating,
                 (SELECT d.start_date FROM discounts d WHERE d.product_id = p.product_id ORDER BY d.discount_id DESC LIMIT 1) AS start_date,
                 (SELECT d.end_date FROM discounts d WHERE d.product_id = p.product_id ORDER BY d.discount_id DESC LIMIT 1) AS end_date,
                 (SELECT d.is_active FROM discounts d WHERE d.product_id = p.product_id ORDER BY d.discount_id DESC LIMIT 1) AS is_active
@@ -421,7 +422,7 @@ exports.getProduct = async (req, res) => {
     try {
         await deactivateExpiredDiscounts();
 
-        const sql = 'SELECT p.product_id, p.seller_id,p.category_id,c.category_name,p.product_name,p.description,p.price,p.original_price,p.stock_quantity,p.brand,p.size,p.product_condition,p.color,p.material,p.season,p.length,p.width,p.fit,pi.image_id,pi.image_path,pi.display_order,s.seller_id, s.store_name, s.store_logo,p.created_at,p.updated_at,(SELECT d.discount_percentage FROM discounts d WHERE d.product_id = p.product_id ORDER BY d.discount_id DESC LIMIT 1) AS discount_percentage,(SELECT d.start_date FROM discounts d WHERE d.product_id = p.product_id ORDER BY d.discount_id DESC LIMIT 1) AS start_date,(SELECT d.end_date FROM discounts d WHERE d.product_id = p.product_id ORDER BY d.discount_id DESC LIMIT 1) AS end_date,(SELECT d.is_active FROM discounts d WHERE d.product_id = p.product_id ORDER BY d.discount_id DESC LIMIT 1) AS is_active FROM products AS p LEFT JOIN categories AS c ON p.category_id = c.category_id LEFT JOIN product_images AS pi ON p.product_id = pi.product_id AND pi.display_order = 1 LEFT JOIN seller_profiles AS s ON p.seller_id = s.seller_id ORDER BY p.product_id';
+        const sql = 'SELECT p.product_id, p.seller_id,p.category_id,c.category_name,p.product_name,p.description,p.price,p.original_price,p.stock_quantity,p.brand,p.size,p.product_condition,p.color,p.material,p.season,p.length,p.width,p.fit,pi.image_id,pi.image_path,pi.display_order,s.seller_id, s.store_name, s.store_logo,p.created_at,p.updated_at,r.rating,(SELECT d.discount_percentage FROM discounts d WHERE d.product_id = p.product_id ORDER BY d.discount_id DESC LIMIT 1) AS discount_percentage,(SELECT d.start_date FROM discounts d WHERE d.product_id = p.product_id ORDER BY d.discount_id DESC LIMIT 1) AS start_date,(SELECT d.end_date FROM discounts d WHERE d.product_id = p.product_id ORDER BY d.discount_id DESC LIMIT 1) AS end_date,(SELECT d.is_active FROM discounts d WHERE d.product_id = p.product_id ORDER BY d.discount_id DESC LIMIT 1) AS is_active FROM products AS p LEFT JOIN categories AS c ON p.category_id = c.category_id LEFT JOIN product_images AS pi ON p.product_id = pi.product_id AND pi.display_order = 1 LEFT JOIN product_reviews r ON r.product_id = p.product_id LEFT JOIN seller_profiles AS s ON p.seller_id = s.seller_id ORDER BY p.product_id';
         const result = await query(sql);
 
         res.status(200).json({
@@ -435,4 +436,24 @@ exports.getProduct = async (req, res) => {
             error: error.message
         });
     }
+};
+
+
+exports.addRating = (req,res) => {
+    const {product_id, user_id, rating} = req.body;
+
+    const sql = `INSERT INTO product_reviews (product_id, user_id, rating)
+    VALUES (?,?,?)
+    ON DUPLICATE KEY UPDATE
+    rating = VALUES(rating);`;
+
+    db.query(sql, [product_id, user_id, rating], (err) => {
+        if(err){
+            return res.status(500).json(err);
+        }
+
+        res.status(200).json({
+            message: "Rating saved."
+        })
+    })
 };
